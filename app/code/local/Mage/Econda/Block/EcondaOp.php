@@ -54,7 +54,7 @@ class Mage_Econda_Block_EcondaOp extends Mage_Core_Block_Template
                 $lang = 1;
             }
             $eLang = Mage::helper('econda/data')->getTranslation();
-            $langStep[0] = $eLang[0][$lang]; $langStep[1] = $eLang[43][$lang]; $langStep[2] = $eLang[2].'/'.$eLang[3][$lang];
+            $langStep[0] = $eLang[0][$lang]; $langStep[1] = $eLang[43][$lang]; $langStep[2] = $eLang[2][$lang].'/'.$eLang[3][$lang];
             $langStep[3] = $eLang[2][$lang].'/'.$eLang[4][$lang]; $langStep[4] = $eLang[5][$lang]; $langStep[5] = $eLang[42][$lang];
             $langStep[6] = $eLang[43][$lang]; $langStep[7] = $eLang[32][$lang];
             $emosLogin = "";
@@ -66,7 +66,7 @@ class Mage_Econda_Block_EcondaOp extends Mage_Core_Block_Template
                 $emosLogin .= "    emospro.login = [['".$customerId."','0']];\n";
                 $opsession->setData('econda_logged','2');
             }
-            $emosOut = "\n\n<!-- Start Econda-Monitor M158 -->\n";
+            $emosOut = "\n\n<!-- Start Econda-Monitor M1591 -->\n";
             $emosOut .= "<script type=\"text/javascript\">\n//<![CDATA[\n";
             $emosOut .= "    window.emosTrackVersion = 2;\n";
             $emosOut .= "//]]>\n</script>";

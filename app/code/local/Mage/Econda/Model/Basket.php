@@ -61,6 +61,7 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
         $rootCat = Mage::app()->getStore()->getRootCategoryId();
         if(sizeof($getCatId) > 0) {
             $catLevel = 0;
+            $catPath = array();
             for($i=0;$i<sizeof($getCatId);$i++) {
                 $level = Mage::getModel('catalog/category')->load($getCatId[$i])->getLevel();
                 $catPathPa = Mage::getModel('catalog/category')->load($getCatId[$i])->getPathIds();
