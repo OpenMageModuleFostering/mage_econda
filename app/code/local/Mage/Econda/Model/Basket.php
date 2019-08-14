@@ -440,19 +440,14 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
             stristr($this->realUrl,'uospayment/success/') != false) {//onepage
                 $lastOrder = Mage::getSingleton('checkout/type_onepage')->getLastOrderId();
                 $lastOrderId = $lastOrder;
-                $quote = Mage::getSingleton('checkout/type_onepage')->getQuote();
-                $entityId = $quote->getData('entity_id');
-                // fallback if there is no result
-                if(empty($entityId)) {
-					$order = Mage::getModel('sales/order')->loadByIncrementId($lastOrderId);
-            		$entityId = $order->getQuoteId();
-                }
+                $order = Mage::getModel('sales/order')->loadByIncrementId($lastOrderId);
+            	$entityId = $order->getQuoteId();
             }
             else{//multipage
                 $entityId = intval($this->session->getData('econda_order_id'));
                 $orderIds = Mage::getSingleton('core/session')->getOrderIds(false);
                 if($orderIds && is_array($orderIds)) {
-                    $lastOrderId =  implode(' / ', $orderIds);
+                $lastOrderId =  implode(' / ', $orderIds);
                 }
                 // fallback if there is no result
                 else {
@@ -468,6 +463,7 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
             $table = $prefix.'sales_flat_quote_address';
             $result = $db->query("SELECT customer_id,city,postcode,country_id,base_grand_total,base_subtotal,base_tax_amount,base_shipping_tax_amount FROM $table WHERE quote_id = $entityId AND address_type = 'shipping'");
             $priceTotal = 0;
+            $custId = 0;
             while($row = $result->fetch(PDO::FETCH_ASSOC)) {
                 $custCountry = $row['country_id'];
                 $custPostCode = $row['postcode'];
@@ -492,7 +488,6 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
         }
         return null;
     }
-
     /**
      * Change price format for econda
      *
