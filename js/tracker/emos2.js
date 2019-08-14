@@ -1,1 +1,1 @@
-// dummy version of emos2.js //
+// dummy version of emos2.js . Please replace with your own file, which can be downloaded within the econda Shop Monitor.//

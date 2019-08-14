@@ -1,5 +1,5 @@
 // econda one page checkout helper
-// Copyright 2009-2012 econda GmbH
+// Copyright 2009-2015 econda GmbH
 var sendOne = 1;
 var orderProcess = '';
 var contentLabel = '';

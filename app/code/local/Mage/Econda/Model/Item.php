@@ -14,52 +14,51 @@
  *
  * @category    Mage
  * @package     Mage_Econda
- * @copyright   Copyright (c) 2013 econda GmbH (http://www.econda.de)
+ * @copyright   Copyright (c) 2015 econda GmbH (http://www.econda.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 class Mage_Econda_Model_Item extends Mage_Core_Model_Abstract
 {
 
-    /*
-     * @var unique Identifier of a product e.g. article number
+    /**
+     * SKU / article number. Always SKU of main product. Ignore variants here.
      */
-     
-    var $productID = "NULL";
+    public $productID = "NULL";
 
-    /*
-     * @var the name of a product
+    /**
+     * SKU / article number. Variants SKU if article is a variant of a main product.
      */
+    public $productSku = null;
 
-    var $productName = "NULL";
+    /**
+     * Name of product without variant extensions
+     */
+    public $productName = "NULL";
 
-    /*
+    /**
      * @var the price of the product, it is your choice wether its gross or net
      */
-     
-    var $price = "NULL";
+    public $price = "NULL";
 
-    /*
+    /**
      * @var the product group for this product, this is a drill down dimension
      * or tree-like structure
      * so you might want to use it like this:
      * productgroup/subgroup/subgroup/product
      */
+    public $productGroup = "NULL";
 
-    var $productGroup = "NULL";
-
-    /*
+    /**
      * @var the quantity / number of products viewed/bought etc..
      */
-     
-    var $quantity = "NULL";
+    public $quantity = "NULL";
 
-    /*
+    /**
      * @var variant of the product e.g. size, color, brand ....
      * remember to keep the order of theses variants allways the same
      * decide which variant is which feature and stick to it
      */
-     
-    var $variant1 = "NULL";
-    var $variant2 = "NULL";
-    var $variant3 = "NULL";
+    public $variant1 = "NULL";
+    public $variant2 = "NULL";
+    public $variant3 = "NULL";
 }

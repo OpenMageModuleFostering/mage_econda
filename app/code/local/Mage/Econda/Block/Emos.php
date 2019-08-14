@@ -4,7 +4,7 @@
  * $Id: emos.php,v 1.15 2009/11/17 13:24:00 egaiser Exp $
  ********************************************************************************
 
- Copyright (c) 2004 - 2013 ECONDA GmbH Karlsruhe
+ Copyright (c) 2004 - 2015 ECONDA GmbH Karlsruhe
  All rights reserved.
 
  ECONDA GmbH
@@ -197,6 +197,7 @@ class Mage_Econda_Block_Emos
     public function emos_ItemFormat($item) 
     {
         $item->productID = $this->emos_DataFormat($item->productID);
+        $item->productSku = $this->emos_DataFormat($item->productSku);
         $item->productName = $this->emos_DataFormat($item->productName);
         $item->productGroup = $this->emos_DataFormat($item->productGroup);
         $item->variant1 = $this->emos_DataFormat($item->variant1);
@@ -248,7 +249,6 @@ class Mage_Econda_Block_Emos
             $str = html_entity_decode($str);
             $str = strip_tags($str);
             $str = utf8_encode($str);
-            $str = addcslashes($str, "\\\"'&<>]");
             $str = trim($str);
         }
         return $str;
@@ -391,6 +391,7 @@ class Mage_Econda_Block_Emos
             }
         }
         $out .= ";\n";
+		
         return $out;
     }
 
@@ -552,11 +553,12 @@ class Mage_Econda_Block_Emos
     public function getEmosECPageArray($item, $event) 
     {
         if(!$this->anchorTags){
-            $item = $this->emos_ItemFormat($item);
             if($this->ecString == "") {
                 $this->ecString .= "    emospro.ec_Event = [\n";
             }
-            $this->ecString .= "       ['".$event."','".$item->productID."','".$item->productName."','".$item->price."','".$item->productGroup."','".$item->quantity."','".$item->variant1."','".$item->variant2."','".$item->variant3."'],\n";
+            $this->ecString .= sprintf("%s, ", json_encode(
+                $this->getProductEventTrackingData($item, $event)
+            ));
         }
         else { //anchor tags
             $item = $this->emos_ItemFormat($item);
@@ -567,6 +569,7 @@ class Mage_Econda_Block_Emos
             $this->ecString .="    emosECPageArray[".$this->ecCounter."] = new Array();\n" .
             "    emosECPageArray[".$this->ecCounter."]['event'] = '".$event."';\n" .
             "    emosECPageArray[".$this->ecCounter."]['id'] = '".$item->productID."';\n" .
+            // "    emosECPageArray[".$this->ecCounter."]['sku'] = '".$item->productSku."';\n" .
             "    emosECPageArray[".$this->ecCounter."]['name'] = '".$item->productName."';\n" .
             "    emosECPageArray[".$this->ecCounter."]['preis'] = '".$item->price."';\n" .
             "    emosECPageArray[".$this->ecCounter."]['group'] = '".$item->productGroup."';\n" .
@@ -639,6 +642,7 @@ class Mage_Econda_Block_Emos
 			"    ".$arrayName."[3] = '".$total."';\n" .
 			"//]]>\n</script>\n";			
         }
+
         return $out;
     }
 
@@ -653,6 +657,25 @@ class Mage_Econda_Block_Emos
         }
     }
 
+    /**
+     * Accepts item object an returns an assoc array as required in JavaScript output 
+     */
+    private function getProductEventTrackingData($eventData, $eventName) {
+        $cleanEventData = $this->emos_ItemFormat($eventData);
+        return array(
+            'type'  => $eventName,
+            'pid'   => $cleanEventData->productID,
+            'sku'   => "".$cleanEventData->productSku,
+            'name'  => $cleanEventData->productName,
+            'group' => $cleanEventData->productGroup,
+            'price' => (float) $cleanEventData->price,
+            'count' => (int) $cleanEventData->quantity,
+            'var1'  => $cleanEventData->variant1 === 'NULL' ? null : $cleanEventData->variant1,
+            'var2'  => $cleanEventData->variant2 === 'NULL' ? null : $cleanEventData->variant2,
+            'var3'  => $cleanEventData->variant3 === 'NULL' ? null : $cleanEventData->variant3,
+        );
+    }
+
     /* returns a emosBasketArray of given Name */
     public function getEmosBasketPageArray($basket, $event) 
     {
@@ -661,8 +684,9 @@ class Mage_Econda_Block_Emos
                 $this->ecString .= "    emospro.ec_Event = [\n";
             }
             foreach ($basket as $item) {
-                $item = $this->emos_ItemFormat($item);
-                $this->ecString .= "       ['".$event."','".$item->productID."','".$item->productName."','".$item->price."','".$item->productGroup."','".$item->quantity."','".$item->variant1."','".$item->variant2."','".$item->variant3."'],\n";
+                $this->ecString .= sprintf("%s, \n", json_encode(
+                    $this->getProductEventTrackingData($item, $event))
+                );
             }
         }
         else {

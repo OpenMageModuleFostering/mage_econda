@@ -15,14 +15,14 @@
  *
  * @category    Mage
  * @package     Mage_Econda
- * @copyright   Copyright (c) 2013 econda GmbH (http://www.econda.de)
+ * @copyright   Copyright (c) 2015 econda GmbH (http://www.econda.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 --> 
 <config>
     <sections>
         <econda module="econda">
-            <label>econda Web Shop Controlling</label>
+            <label>econda Web Analytics</label>
             <tab>sales</tab>
             <frontend_type>text</frontend_type>
             <sort_order>335</sort_order>
@@ -42,15 +42,14 @@
     <table border="0" cellpadding="0" cellspacing="0" style="width:640px;padding:2px;margin:4px;">
       <tr>
         <td style="width:320px;padding-bottom:20px;">
-            <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight:bold;">High-End Web-Analyse für Magento-Shops</p>Mit econda verfügt Market Ready Germany<br />über eine datenschutzkonforme High-End<br />Web-Analyse Lösung. Optimal abgestimmt<br />auf die Erfordernisse deutscher Online-Shop-<br />Betreiber und perfekt verzahnt mit Magento.
+            <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight:bold;">High-End Web-Analyse für Magento-Shops</p>Mit econda verfügen Sie <br />über eine datenschutzkonforme High-End<br />Web-Analyse Lösung. Optimal abgestimmt<br />auf die Erfordernisse deutscher Online-Shop-<br />Betreiber und perfekt verzahnt mit Magento.
         </td>
         <td style="vertical-align:middle;">
-            <a href="http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/01_econda_logo" target="_blank"><img src="http://www.econda.de/fileadmin/content/Aktionen/MRG/econda_logo.jpg" width="173" height="63" border="0" /></a><p>&nbsp;</p>
+            <a href="http://www.econda.de/partner/partneruebersicht/technologiepartner/plattformpartner/magento/" target="_blank"><img src="http://www.econda.de/fileadmin/templates/img/layout/headerlogo.gif" width="161" height="31" border="0" /></a><p>&nbsp;</p>
         </td>
       </tr>
       <tr>
         <td>
-            <a href="http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/02_aktionsbanner" target="_blank"><img style="padding-bottom:15px;" src="http://www.econda.de/fileadmin/content/Aktionen/MRG/aktionsbanner.jpg" width="252" height="283" border="0" /></a>
             <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight: bold;">Umsatz hoch, Marketingkosten runter</p>econda ist bei über 1000 E-Commerce<br />Unternehmen erfolgreich im Einsatz und liefert<br />die Zahlen für nachhaltige Erfolgsoptimierung<br />und dauerhafte Umsatzsteigerung.
         </td>
         <td>
@@ -58,9 +57,6 @@
             <p>&nbsp;</p>
             <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight:bold;">TÜV zertifizierter Datenschutz</p>&quot;econda ist eines der wenigen Webanalyse-Tools,<br />die laut einer Studie dem Kriterienkatalog der obersten<br />Datenschutzbehörden entsprechen und somit daten-<br />schutzkonform in Deutschland eingesetzt werden<br />können.&quot;<br /><em style="font-size:12px;">Thomas Karst, Geschäftsführer der Trusted Shops GmbH</em>
             <p>&nbsp;</p>
-            <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight:bold;">Sonderaktion für Magento mit Market Ready Germany</p>Jetzt 2 Wochen gratis testen und bei Buchung<br />die Einrichtungsgebühr sparen!
-            <p>&nbsp;</p>
-            <button style="" class="scalable" type="button" onclick="window.open('http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/03_testbutton_1')"><span>Jetzt kostenlos testen!</span></button>
         </td>
       </tr>
     </table>
@@ -86,9 +82,6 @@
         <td style="width:320px;padding-bottom:20px;">
             <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight:bold;">econda Shop Monitor</p>Der econda Shop Monitor ist eine High-End<br />Web-Analyse Lösung, die exakt auf die An-<br />forderungen deutscher Online-Shop-Betreiber<br />und auf Magento zugeschnitten ist. Basierend<br />auf der wegweisenden econda r.a.c.e. technology<br />liefern die Web Controlling Lösungen rasante<br />Analyseauswertungen in Echtzeit bei maximaler<br />Flexibilität.
         </td>
-        <td style="vertical-align:middle;">
-            <a href="http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/04_screenshot_shop" target="_blank"><img src="http://www.econda.de/fileadmin/content/Aktionen/MRG/screenshot_shop.jpg" width="307" height="136" border="0" /></a>
-        </td>
       </tr>
       <tr>
         <td colspan="2" style="padding-bottom:20px;">
@@ -112,15 +105,15 @@
             <li>Automatische  Alerts und Reports</li>
             <li>Zahlreiche  E-Commerce Plug-Ins</li>
             </ul>
-            <p style="font-family:Arial;color:#000000;font-size:10pt;font-weight:bold;padding-top:10px;">Mehr infos finden Sie hier: <a href="http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/06_Info-Link" target="_blank">www.econda.de/mrg</a></p>
+            <p style="font-family:Arial;color:#000000;font-size:10pt;font-weight:bold;padding-top:10px;">Mehr infos finden Sie hier: <a href="http://www.econda.de/partner/partneruebersicht/technologiepartner/plattformpartner/magento/?campaign=partner/Magento_extension/config" target="_blank">www.econda.de</a></p>
           </td>
         <td style="vertical-align:middle;">
-            <a href="http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/05_screenshot_click" target="_blank"><img src="http://www.econda.de/fileadmin/content/Aktionen/MRG/screenshot_click.jpg" width="252" height="180" border="0" /></a>
+            <a href="http://www.econda.de/partner/partneruebersicht/technologiepartner/plattformpartner/magento/?campaign=partner/Magento_extension/config" target="_blank"><img src="http://www.econda.de/fileadmin/content/Aktionen/MRG/screenshot_click.jpg" width="252" height="180" border="0" /></a>
          </td>
       </tr>
       <tr>
         <td style="padding-bottom:20px;">
-            <a href="http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/07_TUEV" target="_blank"><img src="http://www.econda.de/fileadmin/content/Aktionen/MRG/tuev.jpg" width="176" height="141" border="0" /></a>
+            <a href="http://www.econda.de/partner/partneruebersicht/technologiepartner/plattformpartner/magento/?campaign=partner/Magento_extension/config" target="_blank"><img src="http://www.econda.de/fileadmin/content/Aktionen/MRG/tuev.jpg" width="176" height="141" border="0" /></a>
         </td>
         <td>
             <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight: bold;">TÜV zertifizierter Datenschutz</p>Als erster Anbieter hat econda das TÜV Siegel<br />&quot;Geprüfter  Datenschutz&quot; des TÜV Saarland für<br />den Bereich Web Shop Controlling erhalten und<br />bietet seinen Kunden damit höchste Sicherheit<br />und Professionalität im Umgang mit Daten.
@@ -130,46 +123,12 @@
         <td colspan="2">
             <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight: bold;">Web-Analyse Expertenwissen und Beratung</p>Das econda-Experten-Team steht Kunden mit Web Analytics Expertise aus hunderten erfolgreichen Projekten beratend zur Seite.
             <p>&nbsp;</p>
-            <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight: bold;">Kostenlos testen – Sonderaktion für Magento mit Market Ready Germany</p>Jetzt 2 Wochen gratis testen und bei Buchung die Einrichtungsgebühr sparen!
-            <p>&nbsp;</p>
-            <button style="" class="scalable" type="button" onclick="window.open('http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/08_testbutton_2')"><span>Jetzt kostenlos testen!</span></button>
         </td>
       </tr>
     </table>
 </div>
                     ]]></comment>
                 </econda_details>
-                <econda_order translate="label">
-                        <label>Test it for free</label>
-                        <frontend_type>text</frontend_type>
-                        <sort_order>12</sort_order>
-                        <show_in_default>1</show_in_default>
-                        <show_in_website>1</show_in_website>
-                        <show_in_store>1</show_in_store>
-                    <comment><![CDATA[
-<div style="font-family:Arial,sans-serif;background-color:white;color:#000000;font-size:13px;">
-    <table border="0" cellpadding="0" cellspacing="0" style="width:640px;padding:2px;margin:4px;">
-        <tr>
-            <td style="padding-bottom:20px;">
-                <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight: bold;">econda Web-Analyse – jetzt 2 Wochen gratis testen und Preisvorteil sichern</p>econda bietet Ihnen einen unverbindlichen und kostenlosen Test inklusive eines persönlichen Optimierungsgesprächs am Ende der Testphase an. Die econda Web-Controlling Experten stehen Ihnen während Ihrer Testphase gerne beratend zur Seite. Entscheiden Sie sich nach dem Test für die dauerhafte Nutzung des Shop Monitor, sparen Sie darüber hinaus als Magento Market Ready  Germany Nutzer die Einrichtungsgebühr!
-            </td>
-        </tr>
-        <tr>
-            <td style="padding-bottom:20px;">
-            <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight: bold;">Jetzt integrieren und nach 5 Minuten eigene Analysen sehen!</p>Testen Sie jetzt den Shop Monitor, die Datenzentrale für Ihren Erfolg im E-Commerce. Und erhalten Sie schon nach kürzester Zeit einen völlig neuen Blick auf das Potenzial Ihres Online-Shops! Über 1000 Kunden, darunter zahlreiche Unternehmen aus den Top 100 des deutschen Versandhandels, vertrauen bereits auf econda. Testen auch Sie jetzt!
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;font-weight: bold;">Kostenlos testen - Sonderaktion für Magento mit Market Ready Germany</p>Jetzt 2 Wochen gratis testen und bei Buchung die Einrichtungsgebühr sparen!
-                <p>&nbsp;</p>
-            <button style="" class="scalable" type="button" onclick="window.open('http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/09_testbutton_3')"><span>Jetzt kostenlos testen!</span></button>
-            </td>
-        </tr>
-    </table>
-</div>
-                    ]]></comment>
-                </econda_order>
                 <econda_activation translate="label">
                         <label>Activation</label>
                         <frontend_type>text</frontend_type>
@@ -182,7 +141,7 @@
     <table border="0" cellpadding="0" cellspacing="0" style="width:640px;padding:2px;margin:4px;">
         <tr>
             <td style="padding-bottom:20px;">
-                <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;">Nach der Bestellung Ihres <a href="http://www.econda.de/web-analyse/landing-pages/partneraktionen/market_ready_germany/?campaign=partner/MRG/10_Info-Link_2" target="_blank">econda Shop Monitor Testzugangs</a> erhalten Sie eine Aktivierungs-E-Mail mit den Informationen zur Aktivierung. Im Anhang der E-Mail finden Sie eine gepackte Datei, die die econda Tracking-Bibliothek &quot;emos2.js&quot; enthält. Zur Aktivierung kopieren diese &quot;emos2.js&quot; einfach in das Verzeichnis &quot;/js/tracker&quot; Ihres Magento Systems. Ab diesem Zeitpunkt werden bereits Daten von Ihrem Shop an econda übermittelt und sind innerhalb weniger Minuten in Ihrem econda Shop Monitor einsehbar.</p>
+                <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;">Nach der Bestellung Ihres econda Shop Monitor Accounts erhalten Sie eine Aktivierungs-E-Mail mit den Informationen zur Aktivierung. Zur Aktivierung kopieren Sie die Tracking-Bibliothek einfach in das Verzeichnis &quot;/js/tracker&quot; Ihres Magento Systems. Ab diesem Zeitpunkt werden bereits Daten von Ihrem Shop an econda übermittelt und sind innerhalb weniger Minuten in Ihrem econda Shop Monitor einsehbar.</p>
             </td>
         </tr>
         <tr>
@@ -201,8 +160,13 @@
             </td>
         </tr>
         <tr>
-            <td>
+            <td style="padding-bottom:20px;">
                 <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;">&quot;Rechnung und Preise&quot;</p>Hier können Sie bestimmen, ob die Rechnungspreise in Netto, Brutto oder in Brutto inklusive der Versandkosten an econda übermittelt werden und in die Konversionen einfließen sollen.
+            </td>
+        </tr>
+        <tr>
+            <td style="padding-bottom:20px;">
+                <p style="font-family:Arial;color:#000000;font-size:10pt;line-height:1.3em;">&quot;Produkt ID&quot;</p>Hier können Sie bestimmen, ob die Magento Produkt ID oder die SKU übertragen werden soll.
             </td>
         </tr>
     </table>

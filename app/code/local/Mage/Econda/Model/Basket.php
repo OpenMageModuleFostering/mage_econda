@@ -14,7 +14,7 @@
  *
  * @category    Mage
  * @package     Mage_Econda
- * @copyright   Copyright (c) 2013 econda GmbH (http://www.econda.de)
+ * @copyright   Copyright (c) 2015 econda GmbH (http://www.econda.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -231,10 +231,12 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
                 $eItem->productName = trim($item->getName());
                 
                 if($isSku == '1' && trim($item->getSku()) != "") {
-                    $eItem->productID = $item->getSku();
+                    $eItem->productID = Mage::getModel('catalog/product') ->load($item->getproductId())->getSku();
+                    $eItem->productSku = $item->getSku();
                 }
                 else{
                     $eItem->productID = $item->getproductId();
+                    $eItem->productSku = Mage::getModel('catalog/product') ->loadByAttribute('sku', $item->getSku())->getId();
                 }
  
                 // calculate tax
@@ -291,10 +293,14 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
                     $eItem = Mage::getModel('econda/item');
                     $eItem->productName = trim($item->getName());
                     if($isSku == '1' && trim($item->getSku()) != "") {
-                        $eItem->productID = $item->getSku();
+						$conf_sku =	Mage::getModel('catalog/product') ->load($item->getproductId()) ->getSku();
+                        $eItem->productID = $conf_sku ;
+						$eItem->productSku = $item->getSku();
                     }
                     else{
-                        $eItem->productID = $item->getproductId();
+						$conf_id =	Mage::getModel('catalog/product') ->loadByAttribute('sku',  $item->getSku())->getId();
+                        $eItem->productID = 	$item->getproductId();
+						$eItem->productSku =$conf_id ;
                     }
                     if(Mage::getStoreConfig($billingOption, $storeId) == '1') {
                         if(Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), true, null, null, $item->getTaxClassId(), $storeId, true) != 0) {
@@ -366,10 +372,12 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
                     $eItem = Mage::getModel('econda/item');
                     $eItem->productName = trim($row['name']);
                     if(Mage::getStoreConfig('econda/econda_settings/product_id', $storeId) == '1' && trim($row['sku']) != "") {
-                        $eItem->productID = trim($row['sku']);
+						$eItem->productID = Mage::getModel('catalog/product') ->load( $row['product_id'])->getSku();
+                        $eItem->productSku = trim($row['sku']);
                     }
                     else{
                         $eItem->productID = $row['product_id'];
+                        $eItem->productSku = Mage::getModel('catalog/product') ->loadByAttribute('sku',$row['sku'] )->getId();
                     }
                     $eItem->quantity = number_format($row['qty'],0);
                     $discount = $row['product_id'];
@@ -436,9 +444,8 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
                 $entityId = $quote->getData('entity_id');
                 // fallback if there is no result
                 if(empty($entityId)) {
-                    $table = $prefix.'sales_flat_quote';
-                    $result = $db->fetchRow("SELECT entity_id FROM $table WHERE reserved_order_id = '".$lastOrder."'");
-                    $entityId = $result['entity_id'];
+					$order = Mage::getModel('sales/order')->loadByIncrementId($lastOrderId);
+            		$entityId = $order->getQuoteId();
                 }
             }
             else{//multipage
