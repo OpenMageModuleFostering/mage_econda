@@ -712,6 +712,8 @@ class EMOS {
 /* EMOS class end */
 
 /* global Functions */
+
+/*
 function getEmosECEvent($item, $event) {
 	$item = $this->emos_ItemFormat($item);
 	$out = "";
@@ -748,6 +750,8 @@ function getEMOSBasketEventArray($basket) {
 	$b = new EMOS();
 	return $b->getEmosBasketArray($basket, "emosBasketArray");
 }
+
+*/
 
 /* A Class to hold products as well a basket items
 * If you want to track a product view, set the quantity to 1.

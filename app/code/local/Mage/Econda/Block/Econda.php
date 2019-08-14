@@ -42,12 +42,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  ECONDA Tracking into Magento Shop-Systems.
  */
 
-//require_once("app/Mage.php");
-require_once Mage::getBaseDir().DS.'/app/Mage.php';
-Mage::app ();
+//require_once Mage::getBaseDir().DS.'/app/Mage.php';
+//Mage::app ();
 
 class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 {
+    var $econdaInt = false;
+    
     public function __construct()
     {
 		parent::__construct();
@@ -56,8 +57,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
     
     public function getEmos() 
     {
-        require Mage::getModuleDir('', 'Mage_Econda').DS.'Block'.DS.'emos.php';
-        
+        require_once Mage::getModuleDir('', 'Mage_Econda').DS.'Block'.DS.'emos.php';
         /*
          * config get language
          */
@@ -101,7 +101,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		/*
 		 * start of emos string
 		 */
-	    $emosString = "\n\n<!-- Start Econda-Monitor M115 -->\n\n";
+	    $emosString = "\n\n<!-- Start Econda-Monitor M116 -->\n\n";
 
 		$emos = new EMOS($pathToFile);
         
@@ -156,7 +156,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 			$contentCheckout = $eLang[5];
 			$stepCheckout = 'PAYMENT';
 		}
-        if(stristr($realUrl,'checkout/multishipping/overview/') != false) {
+        if(stristr($realUrl,'checkout/multishipping/overview/') != false || stristr($realUrl,'paypal/express/review/') != false) {
 			$contentCheckout = $eLang[36];
 			$stepCheckout = 'REVIEW';
 		}	
@@ -572,7 +572,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
        		 	$emos->addLogin($customerId,1);
        		 }
        	 }
-       	 	
+         
   	    /*
   	     * emos orderProcess multishipping checkout
   	     */
@@ -598,126 +598,138 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 				$session->setData('econda_order_id',$actOrder);
 				break;
        		case 'SUCCESS':
-       			$emos->addOrderProcess("7_".$eLang[41]);   			
+       			$emos->addOrderProcess("7_".$eLang[41]);
 		
 			/*
 			 * addEmosBillingPageArray checkout
 			 */	
-       		 	if(stristr($realUrl,'checkout/onepage/success/') != false || stristr($realUrl,'uospayment/success/') != false) {//onepage
-                    $lastOrder = Mage::getSingleton('checkout/type_onepage')->getLastOrderId();
-                    $lastOrderId = $lastOrder;
-                    $quote = Mage::getSingleton('checkout/type_onepage')->getQuote();
-                    $entityId = $quote->getData('entity_id');                    
-                    
-                    if(empty($entityId)) {
-                        $tableSfq = $tablePrefix.'sales_flat_quote';
-                        $result = $db->query("SELECT entity_id FROM $tableSfq WHERE reserved_order_id = $lastOrder");
-                        $row = $result->fetch(PDO::FETCH_ASSOC);            
-                        $entityId = $row['entity_id'];
-                    }    
-      	 	 	}
-       		 	else{//multipage
-                    $entityId = intval($session->getData('econda_order_id'));
-                    $orderIds = Mage::getSingleton('core/session')->getOrderIds(false);
-                    if($orderIds && is_array($orderIds)) {
-                        $lastOrderId =  implode(' / ', $orderIds);
-                    } 
-                    else {
-                        $customerId = Mage::getSingleton('customer/session')->getCustomerId();
-                        $tableSfqos = $tablePrefix.'sales_order'; 
-                        $result = $db->query("SELECT increment_id FROM $tableSfqos WHERE customer_id = $customerId");
-                        while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-                            $lastOrderId = $row['increment_id'];    
+             
+                try {
+       		 	     if(stristr($realUrl,'checkout/onepage/success/') != false || stristr($realUrl,'uospayment/success/') != false) {//onepage
+                        $lastOrder = Mage::getSingleton('checkout/type_onepage')->getLastOrderId();
+                        $lastOrderId = $lastOrder;
+                        $quote = Mage::getSingleton('checkout/type_onepage')->getQuote();
+                        $entityId = $quote->getData('entity_id');
+                        if(empty($entityId)) {
+                                $tableSfq = $tablePrefix.'sales_flat_quote';
+                                $result = $db->query("SELECT entity_id FROM $tableSfq WHERE reserved_order_id = $lastOrder");
+                                $row = $result->fetch(PDO::FETCH_ASSOC);            
+                                $entityId = $row['entity_id'];
+                        }
+      	 	 	     }
+       		 	     else{//multipage
+                        $entityId = intval($session->getData('econda_order_id'));
+                        $orderIds = Mage::getSingleton('core/session')->getOrderIds(false);
+                        if($orderIds && is_array($orderIds)) {
+                            $lastOrderId =  implode(' / ', $orderIds);
                         } 
-                    }                      
-       		 	}
-                $tableSfqa = $tablePrefix.'sales_flat_quote_address'; 
-                $result = $db->query("SELECT customer_id,city,postcode,country_id,base_grand_total,base_subtotal,base_tax_amount,base_shipping_tax_amount FROM $tableSfqa WHERE quote_id = $entityId and address_type = 'shipping'");
-                $priceTotal = 0;
+                        else {
+                            $customerId = Mage::getSingleton('customer/session')->getCustomerId();
+                            $tableSfqos = $tablePrefix.'sales_order'; 
+                            $result = $db->query("SELECT increment_id FROM $tableSfqos WHERE customer_id = $customerId");
+                            while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                                $lastOrderId = $row['increment_id'];    
+                            } 
+                        }                      
+       		 	     }
+
+                    $tableSfqa = $tablePrefix.'sales_flat_quote_address'; 
+                    $result = $db->query("SELECT customer_id,city,postcode,country_id,base_grand_total,base_subtotal,base_tax_amount,base_shipping_tax_amount FROM $tableSfqa WHERE quote_id = $entityId and address_type = 'shipping'");
+                    $priceTotal = 0;
                 
-                while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-                    $custCountry = $row['country_id'];                  
-                    $custPostCode = $row['postcode'];
-                    $custCity = $row['city'];
-                    $custId = $row['customer_id'];
-                    $ordId = $lastOrderId;
-                    if(Mage::getStoreConfig($billingOption, $storeId) == '1') {
-                        $priceTotal += $row['base_subtotal'];
+                    while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                        $custCountry = $row['country_id'];                  
+                        $custPostCode = $row['postcode'];
+                        $custCity = $row['city'];
+                        $custId = $row['customer_id'];
+                        $ordId = $lastOrderId;
+                        if(Mage::getStoreConfig($billingOption, $storeId) == '1') {
+                            $priceTotal += $row['base_subtotal'];
+                        }
+                        else if(Mage::getStoreConfig($billingOption, $storeId) == '2') {
+                            $priceTotal += $row['base_subtotal'] + $row['base_tax_amount'] - $row['base_shipping_tax_amount'];
+                        }
+                        else {
+                            $priceTotal += $row['base_grand_total'];    
+                        }    
                     }
-                    else if(Mage::getStoreConfig($billingOption, $storeId) == '2') {
-                        $priceTotal += $row['base_subtotal'] + $row['base_tax_amount'] - $row['base_shipping_tax_amount'];
-                    }
-                    else {
-                        $priceTotal += $row['base_grand_total'];    
-                    }    
-                }
                 
-                $priceTotal = $this->convertPrice($priceTotal);               
-                $custAdress = $custCountry.'/'.substr($custPostCode,0,1).'/'.substr($custPostCode,0,2).'/'.$custCity.'/'.$custPostCode;
-                $emos->addEmosBillingPageArray($ordId,$custId,$priceTotal,$custCountry,$custPostCode,$custCity);
+                    $priceTotal = $this->convertPrice($priceTotal);               
+                    $custAdress = $custCountry.'/'.substr($custPostCode,0,1).'/'.substr($custPostCode,0,2).'/'.$custCity.'/'.$custPostCode;
+                    $emos->addEmosBillingPageArray($ordId,$custId,$priceTotal,$custCountry,$custPostCode,$custCity);
 
        	   /*
        	    * addEmosBasketPageArray checkout
        	    */	       	 	
-       	 		$basket = array();
-       	 		$bCounter = 0;
-       	 		$tableSfqi = $tablePrefix.'sales_flat_quote_item';
-				$result = $db->query("SELECT product_id,name,qty,price,parent_item_id FROM $tableSfqi WHERE quote_id = $entityId");
+       	 		    $basket = array();
+       	 		    $bCounter = 0;
+       	 		    $tableSfqi = $tablePrefix.'sales_flat_quote_item';
+				    $result = $db->query("SELECT product_id,name,qty,price,parent_item_id FROM $tableSfqi WHERE quote_id = $entityId");
 
-       		 	while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-       		 		if($row['parent_item_id'] == '') {
-  		  		 		$getGroup = $this->getProductCategory($row['product_id']);
-    			 		if($getGroup) $prodGroup = $getGroup;
-    			 		else $prodGroup = $eLang[39];
-                        $item = Mage::getModel('catalog/product')->load($row['product_id']);
- 	   			 		$eItem = new EMOS_Item();
-    			 		$eItem->productName = trim($row['name']);
-    			 		$eItem->productID = $row['product_id'];
-                        $eItem->quantity = number_format($row['qty'],0);                        
-                        $discount = $row['product_id'];
-                        $tablePrpr = $tablePrefix.'catalog_product_entity_tier_price';
-                        $resultp = $db->query("SELECT qty,value FROM $tablePrpr WHERE entity_id = $discount");
-                        $rowp = $resultp->fetch(PDO::FETCH_ASSOC);
-                        $discountcheck = 0;
-                        if($rowp) {
-                            if($eItem->quantity >= $rowp['qty']) {
-                                $discountcheck = $rowp['value']; 
-                            }    
-                        }
-                        if(Mage::getStoreConfig($billingOption, $storeId) == '1') { 
-                            if($discountcheck > 0) {
-                                $priceTax = Mage::helper('tax')->getPrice($item, $discountcheck, false, null, null, $item->getTaxClassId(), $storeId, true);                              
-                            }    
-                            else if(Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false, null, null, $item->getTaxClassId(), $storeId, true) != 0) {
-                                $priceTax = Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false, null, null, $item->getTaxClassId(), $storeId, true);                  
-                            }
-                            else {
-                                $priceTax = Mage::helper('tax')->getPrice($item, $item->getPrice(), false, null, null, $item->getTaxClassId(), $storeId, true);                               
-                            }                         
-                        }
-                        else {
-                            if($discountcheck > 0) {
-                                $priceTax = Mage::helper('tax')->getPrice($item, $discountcheck, false, null, null, $item->getTaxClassId(), $storeId, false);                              
-                            }                             
-                            else if(Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false, null, null, $item->getTaxClassId(), $storeId, false) != 0) {
-                                $priceTax = Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false, null, null, $item->getTaxClassId(), $storeId, false);                    
-                            }
-                            else {
-                                $priceTax = Mage::helper('tax')->getPrice($item, $item->getPrice(), false, null, null, $item->getTaxClassId(), $storeId, false);                               
-                            }    
-                        }
-                        $eItem->price = $this->convertPrice($priceTax);                         
-    			 		$eItem->productGroup = $prodGroup.'/'.trim($row['name']);
-    			 		$basket[$bCounter] = $eItem;
-    			 		$bCounter += 1;
-       		 		}
-    		 	}        		
-       	 	    $emos->addEmosBasketPageArray($basket);		
+       		 	    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+       		 		    if($row['parent_item_id'] == '') {
+  		  		 		    $getGroup = $this->getProductCategory($row['product_id']);
+    			 		     if($getGroup) $prodGroup = $getGroup;
+    			 		     else $prodGroup = $eLang[39];
+                             $item = Mage::getModel('catalog/product')->load($row['product_id']);
+ 	   			 		     $eItem = new EMOS_Item();
+    			 		     $eItem->productName = trim($row['name']);
+    			 		     $eItem->productID = $row['product_id'];
+                             $eItem->quantity = number_format($row['qty'],0);                        
+                             $discount = $row['product_id'];
+                             $tablePrpr = $tablePrefix.'catalog_product_entity_tier_price';
+                             $resultp = $db->query("SELECT qty,value FROM $tablePrpr WHERE entity_id = $discount");
+                             $rowp = $resultp->fetch(PDO::FETCH_ASSOC);
+                             $discountcheck = 0;
+                             if($rowp) {
+                                if($eItem->quantity >= $rowp['qty']) {
+                                    $discountcheck = $rowp['value']; 
+                                }    
+                             }
+                             if(Mage::getStoreConfig($billingOption, $storeId) == '1') { 
+                                if($discountcheck > 0) {
+                                    $priceTax = Mage::helper('tax')->getPrice($item, $discountcheck, false, null, null, $item->getTaxClassId(), $storeId, true);                              
+                                }    
+                                else if(Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false, null, null, $item->getTaxClassId(), $storeId, true) != 0) {
+                                    $priceTax = Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false, null, null, $item->getTaxClassId(), $storeId, true);                  
+                                }
+                                else {
+                                    $priceTax = Mage::helper('tax')->getPrice($item, $item->getPrice(), false, null, null, $item->getTaxClassId(), $storeId, true);                               
+                                }                         
+                             }
+                             else {
+                                if($discountcheck > 0) {
+                                    $priceTax = Mage::helper('tax')->getPrice($item, $discountcheck, false, null, null, $item->getTaxClassId(), $storeId, false);                              
+                                }                             
+                                else if(Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false, null, null, $item->getTaxClassId(), $storeId, false) != 0) {
+                                    $priceTax = Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false, null, null, $item->getTaxClassId(), $storeId, false);                    
+                                }
+                                else {
+                                    $priceTax = Mage::helper('tax')->getPrice($item, $item->getPrice(), false, null, null, $item->getTaxClassId(), $storeId, false);                               
+                                }    
+                             }
+                             $eItem->price = $this->convertPrice($priceTax);                         
+    			 		     $eItem->productGroup = $prodGroup.'/'.trim($row['name']);
+    			 		     $basket[$bCounter] = $eItem;
+    			 		     $bCounter += 1;
+       		 		    }
+    		 	    }        		
+       	 	        $emos->addEmosBasketPageArray($basket);	
+                } catch (Exception $e) {
+                    Mage::log("Econda on success no billing available");
+                }
+                break;	
 		}																
 			
 		$emosString .= $emos->toString();	
 		$emosString .= "\n<!-- End Econda-Monitor -->\n\n";
-    	return $emosString;
+        if(!$this->econdaInt) {
+            $this->econdaInt = true;
+    	    return $emosString;
+        }
+        else {
+            return "";    
+        }
     }
     
     /*
