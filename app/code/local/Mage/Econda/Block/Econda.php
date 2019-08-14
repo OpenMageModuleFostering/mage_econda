@@ -101,7 +101,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		/*
 		 * start of emos string
 		 */
-	    $emosString = "\n\n<!-- Start Econda-Monitor M116 -->\n\n";
+	    $emosString = "\n\n<!-- Start Econda-Monitor M117 -->\n\n";
 
 		$emos = new EMOS($pathToFile);
         
