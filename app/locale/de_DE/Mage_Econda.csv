@@ -1,3 +1,4 @@
 "Used Language","Verwendete Sprache"
 "Settings","Einstellungen"
 "Select only the language, which at the time of initial activation of your econda product has been selected.","Nur die Sprache verwenden, welche bei der ersten Aktivierung Ihres econda Produktes ausgew&#228hlt wurde."
+"Only newer versions of the emos2.js file (received after September 2009) can handle Version 2. Copy your personal emos2.js file into the direcotory /js/tracker/.","Nur neuere Versionen der emos2.js Datei (Erhalten ab September 2009) k&#246nnen mit Version 2 umgehen. Kopieren Sie Ihre personalisierte emos2.js Datei in das Verzeichnis /js/tracker/."

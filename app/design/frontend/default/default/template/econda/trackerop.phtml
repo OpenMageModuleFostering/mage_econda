@@ -1,11 +1,13 @@
-
 <?php
 
 $realUrlOp = Mage::helper('core/url')->getCurrentUrl();
 $opsession = Mage::getSingleton('checkout/session');
 
 if(stristr($realUrlOp,'checkout/onepage/') != false) {
-		
+
+    $storeIdOp = $this->getStore();
+    $emVersion = Mage::getStoreConfig('econda/econda/tracking_version', $storeIdOp);
+    		
 	$pathToEmos = $this->getJsUrl().'tracker/emos2.js';
 	$pathToOpJs = $this->getJsUrl().'tracker/emosop.js';
 
@@ -17,87 +19,114 @@ if(stristr($realUrlOp,'checkout/onepage/') != false) {
 	$customerId = md5(Mage::getSingleton('customer/session')->getCustomerId());
 
 	$setPageId = md5($splitSessionData[0]);
-	$setSiteID = dataFormat($splitSessionData[1]);
+	$setSiteID = dataFormat($splitSessionData[1],$emVersion);
 	$setLangID = $splitSessionData[2];
 	
-   	$storeIdOp = $this->getStore();
-    	$langValueOP = 'econda/econda/tracking_language';
-    	$langPathOp = Mage::getStoreConfig($langValueOP, $storeIdOp);
+    $langValueOP = 'econda/econda/tracking_language';
+    $langPathOp = Mage::getStoreConfig($langValueOP, $storeIdOp);
     	 
-    	if($langPathOp == '0') {
-    		$langFileOp = 'german';
-    	}
-    	else if($langPathOp == '1') {
-    		$langFileOp = 'english';
-    	}
-    	else {
-    		$langFileOp = 'german';
-    	}
-    	require_once ('app/code/local/Mage/Econda/Language/'.$langFileOp.'.php');	
+    if($langPathOp == '0') {
+    	$langFileOp = 'german';
+    }
+    else if($langPathOp == '1') {
+    	$langFileOp = 'english';
+    }
+    else {
+    	$langFileOp = 'german';
+    }
+    require_once ('app/code/local/Mage/Econda/Language/'.$langFileOp.'.php');	
 	
 	$langStep[0] = $eLang[0]; $langStep[1] = $eLang[43]; $langStep[2] = $eLang[2].'/'.$eLang[3];
 	$langStep[3] = $eLang[2].'/'.$eLang[4]; $langStep[4] = $eLang[5]; $langStep[5] = $eLang[42]; 
 	$langStep[6] = $eLang[43]; $langStep[7] = $eLang[32];
+    
+    $emosLogin = "";
+    if(stristr($this->getMessagesBlock()->getGroupedHtml(),'error-msg') != false) {
+        $emosLogin .= "    emospro.login = [['".$customerId."','1']];\n";  
+    }
+    $isLoggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
 
+    if($isLoggedIn == 1 && $opsession->getData('econda_logged') != 2) {
+        $emosLogin .= "    emospro.login = [['".$customerId."','0']];\n";  
+        $opsession->setData('econda_logged','2');
+    }    
 
-	$emosOut = "\n<!-- Start Econda-Monitor -->\n";
-	$emosOut .= "\n<a name=\"emos_name\" title=\"content\" rel=\"Start/".$eLang[38]."\" rev=\"\"></a>\n";
-	$emosOut .= "\n<script type=\"text/javascript\">\n";
-	$emosOut .= " window.emosPageId = '".$setPageId."'; \n";
-	$emosOut .= " ecStep = new Array('".$langStep[0]."','".$langStep[1]."','".$langStep[2]."','".$langStep[3]."','".$langStep[4]."','".$langStep[5]."','".$langStep[6]."','".$langStep[7]."');\n";
-	$emosOut .= "</script>\n";
-	$emosOut .= "\n<a name=\"emos_name\" title=\"siteid\" rel=\"".$setSiteID."\" rev=\"\"></a>";
-	$emosOut .= "\n<a name=\"emos_name\" title=\"langid\" rel=\"".$setLangID."\" rev=\"\"></a>\n";
+    if($emVersion == '2') {
+        $emosOut = "\n<!-- Start Econda-Monitor -->\n";
+        $emosOut .= "\n<script type=\"text/javascript\">\n//<![CDATA[\n";
+        $emosOut .= "    window.emosTrackVersion = 2;\n";
+        $emosOut .= "//]]>\n</script>";
+        $emosOut .= $emosInclude;
+        $emosOut .= "<script type=\"text/javascript\">\n//<![CDATA[\n";
+        $emosOut .= "    ecStep = new Array('".$langStep[0]."','".$langStep[1]."','".$langStep[2]."','".$langStep[3]."','".$langStep[4]."','".$langStep[5]."','".$langStep[6]."','".$langStep[7]."');\n";        
+        $emosOut .= "    var emospro = {};\n";
+        $emosOut .= "    emospro.content = 'Start/".$eLang[38]."';\n";
+        $emosOut .= "    emospro.pageId = '".$setPageId."';\n";
+        $emosOut .= "    emospro.siteid = '".$setSiteID."';\n";
+        $emosOut .= "    emospro.langid = '".$setLangID."';\n";
+        $emosOut .= $emosLogin;
+    }
+    else {
+        $emosOut = "\n<!-- Start Econda-Monitor -->\n";
+        $emosOut .= "\n<a name=\"emos_name\" title=\"content\" rel=\"Start/".$eLang[38]."\" rev=\"\"></a>\n";
+        $emosOut .= "<script type=\"text/javascript\">\n//<![CDATA[\n";
+        $emosOut .= " window.emosPageId = '".$setPageId."'; \n";
+        $emosOut .= " ecStep = new Array('".$langStep[0]."','".$langStep[1]."','".$langStep[2]."','".$langStep[3]."','".$langStep[4]."','".$langStep[5]."','".$langStep[6]."','".$langStep[7]."');\n";
+        $emosOut .= " var emospro = {};\n";
+        $emosOut .= $emosLogin;
+        $emosOut .= "//]]>\n</script>";
+        $emosOut .= "\n<a name=\"emos_name\" title=\"siteid\" rel=\"".$setSiteID."\" rev=\"\"></a>";
+        $emosOut .= "\n<a name=\"emos_name\" title=\"langid\" rel=\"".$setLangID."\" rev=\"\"></a>";       
+    }
 
-	if(stristr($this->getMessagesBlock()->getGroupedHtml(),'error-msg') != false) {
-		$emosOut .= "<a name=\"emos_name\" title=\"login\" rel=\"".$customerId."\" rev=\"1\"></a>\n";
-	}
-	$isLoggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
-
-	if($isLoggedIn == 1 && $opsession->getData('econda_logged') != 2) {
-		$emosOut .= "<a name=\"emos_name\" title=\"login\" rel=\"".$customerId."\" rev=\"0\"></a>\n";
-		$opsession->setData('econda_logged','2');
-	}
-	 
 	echo $emosOut;
-	echo $emosInclude;
-	echo $opInclude;
+    if($emVersion == '2') {
+        echo "//]]>\n</script>\n".$opInclude;        
+    }
+    else {
+        echo $emosInclude;
+        echo $opInclude;        
+    }
 	echo "\n<!-- End Econda-Monitor -->\n";
 }
 
-
-function dataFormat($str) {
-	$str = urldecode($str);
-	if (function_exists('htmlspecialchars_decode')) {
-		$str = htmlspecialchars_decode($str, ENT_QUOTES);
-	} else {
-		$str = $this->htmlspecialchars_decode_php4($str);
-	}
-	$str = html_entity_decode($str);
-	$str = strip_tags($str);
-	$str = trim($str);
-
-	$nbsp = chr(0xa0);
-	$str = str_replace($nbsp, " ", $str);
-	$str = str_replace("\"", "", $str);
-	$str = str_replace("'", "", $str);
-	$str = str_replace("%", "", $str);
-	$str = str_replace(",", "", $str);
-	$str = str_replace(";", "", $str);
-	while (true) {
-		$str_temp = $str;
-		$str = str_replace("  ", " ", $str);
-
-		if ($str == $str_temp) {
-			break;
-		}
-	}
-	$str = str_replace(" / ", "/", $str);
-	$str = str_replace(" /", "/", $str);
-	$str = str_replace("/ ", "/", $str);
-
-	$str = substr($str, 0, 254);
-	$str = rawurlencode($str);
+function dataFormat($str,$emVersion) {
+    if($emVersion == '2') {
+        $str = utf8_decode($str);
+        $str = html_entity_decode($str);
+        $str = utf8_encode($str);
+        $str = addcslashes($str, "\\\"'&<>]");       
+    }
+    else {
+        $str = urldecode($str);
+        if (function_exists('htmlspecialchars_decode')) {
+           $str = htmlspecialchars_decode($str, ENT_QUOTES);
+        } else {
+           $str = $this->htmlspecialchars_decode_php4($str);
+        }
+        $str = html_entity_decode($str);
+        $str = strip_tags($str);
+        $str = trim($str);
+        $nbsp = chr(0xa0);
+        $str = str_replace($nbsp, " ", $str);
+        $str = str_replace("\"", "", $str);
+        $str = str_replace("'", "", $str);
+        $str = str_replace("%", "", $str);
+        $str = str_replace(",", "", $str);
+        $str = str_replace(";", "", $str);
+        while (true) {
+        $str_temp = $str;
+        $str = str_replace("  ", " ", $str);
+            if ($str == $str_temp) {
+              break;
+            }
+        }
+        $str = str_replace(" / ", "/", $str);
+        $str = str_replace(" /", "/", $str);
+        $str = str_replace("/ ", "/", $str);
+        $str = substr($str, 0, 254);
+        $str = rawurlencode($str);
+    }
 	return $str;
 }
 ?>

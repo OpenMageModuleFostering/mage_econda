@@ -47,16 +47,19 @@ Mage::app ();
 
 class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 {
-	
     public function __construct()
     {
 		parent::__construct();
         $this->setTemplate('econda/tracker.phtml');
     }
     
-    public function getEmos() {
-    	
+    public function getEmos() 
+    {
         require Mage::getModuleDir('', 'Mage_Econda').DS.'Block'.DS.'emos.php';
+        
+        /*
+         * config get language
+         */
     	$storeId = $this->getStore();
     	$langValue = 'econda/econda/tracking_language';
     	$langPath = Mage::getStoreConfig($langValue, $storeId);
@@ -67,11 +70,27 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
     	else if($langPath == '1') {
     		$langFile = 'english';
     	}
-    	else {
+    	else{
     		$langFile = 'german';
     	}
         require Mage::getModuleDir('', 'Mage_Econda').DS.'Language'.DS.$langFile.'.php';
-    	
+
+        /*
+         * config get emos version
+         */
+
+        $trackValue = 'econda/econda/tracking_version';
+        if(Mage::getStoreConfig($trackValue, $storeId) == '' || Mage::getStoreConfig($trackValue, $storeId) == '0') {
+            $checkVersion = $this->emosVersion();
+            if(Mage::getStoreConfig($trackValue, $storeId) == '' || $checkVersion != '0') {
+                Mage::getModel('core/config')->saveConfig($trackValue,$checkVersion);
+                Mage::getModel('core/config')->cleanCache();
+            }            
+        }
+        else{
+            $checkVersion = Mage::getStoreConfig($trackValue, $storeId);
+        }
+
     	/*
     	 * path to emos2.js
     	 */
@@ -81,10 +100,16 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		/*
 		 * start of emos string
 		 */
-	    $emosString = "\n\n<!-- Start Econda-Monitor M103 -->\n\n";
+	    $emosString = "\n\n<!-- Start Econda-Monitor M110 -->\n\n";
 
 		$emos = new EMOS($pathToFile);
-		
+        
+        if($checkVersion == '2') {
+           $emos->trackMode(intval($checkVersion));  
+        }
+        
+        $emos->addCdata();
+
 		Mage::getSingleton('core/session', array('name'=>'frontend'));
 		$db = Mage::getSingleton('core/resource')->getConnection('core_write');
         $session = Mage::getSingleton('checkout/session');	
@@ -97,12 +122,11 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 	    $storeNameLoad = Mage::getModel('core/store_group')->load($storeId);
         $storeName = $storeNameLoad->getName();
         $tablePrefix = Mage::getConfig()->getTablePrefix();
-                
         $getPath = Mage::helper('catalog')->getBreadcrumbPath($this->getCategory());
         if(sizeof($getPath) > 0) {
         	$contentPath = "Start";	
         }
-        else {
+        else{
         	$contentPath = "";
         }
         
@@ -193,7 +217,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
         	if(trim($getTagName) == ''){
         		$contentPath .= '/'.$eLang[36];
         	}
-        	else {
+        	else{
 				$contentPath .= '/'.$getTagName;
         	}
         }
@@ -202,34 +226,33 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
          *  check if get current url match
          */
         if(trim($contentPath) == '') {
-        		$checkPath = str_replace($_SERVER['SERVER_NAME'],"",$realUrl);
-        		$checkPath = str_replace("https://","",$checkPath);
-        		$checkPath = str_replace("http://","",$checkPath);
-        		if(strpos($checkPath,"?") != false) {
-        			$reqPos = strPos($checkPath,"?");
-        			$checkPath = substr($checkPath,0,$reqPos);
-        		}
-        		if(substr($checkPath,-1) == "/") {
-        			$checkPath = substr($checkPath,0,-1);
-        		}
-        		$checkPath = str_replace("/index.php/".$storeCode,"",$checkPath);
-        		$checkPath = str_replace("/index.php","",$checkPath);
-        		$codeLen = strlen($storeCode);
-        		if(substr($checkPath,0,$codeLen+1) == '/'.$storeCode) {
-        			$checkPath = substr($checkPath,$codeLen+1);
-        		}
-
-        		if(trim($checkPath) != '') {
-        			$urlExtExp = explode("/",$checkPath);
-					$urlExtO = '';
-					for ($i = 0; $i < sizeof($urlExtExp); $i++) {
-						if(trim($urlExtExp[$i]) != ''){
-							$urlExtO .= ucfirst($urlExtExp[$i]).'/';
-						}
-					}       			
-        			$contentPath = 'Start/'.$eLang[38].'/'.substr($urlExtO,0,-1);
-        			$contentPath = str_replace("//","/",$contentPath);
-        		}
+            $checkPath = str_replace($_SERVER['SERVER_NAME'],"",$realUrl);
+        	$checkPath = str_replace("https://","",$checkPath);
+        	$checkPath = str_replace("http://","",$checkPath);
+        	if(strpos($checkPath,"?") != false) {
+        		$reqPos = strPos($checkPath,"?");
+        		$checkPath = substr($checkPath,0,$reqPos);
+        	}
+        	if(substr($checkPath,-1) == "/") {
+        	    $checkPath = substr($checkPath,0,-1);
+        	}
+        	$checkPath = str_replace("/index.php/".$storeCode,"",$checkPath);
+        	$checkPath = str_replace("/index.php","",$checkPath);
+        	$codeLen = strlen($storeCode);
+        	if(substr($checkPath,0,$codeLen+1) == '/'.$storeCode) {
+        		$checkPath = substr($checkPath,$codeLen+1);
+        	}
+        	if(trim($checkPath) != '') {
+        		$urlExtExp = explode("/",$checkPath);
+				$urlExtO = '';
+				for($i = 0; $i < sizeof($urlExtExp); $i++) {
+					if(trim($urlExtExp[$i]) != ''){
+					   $urlExtO .= ucfirst($urlExtExp[$i]).'/';
+					}
+				}       			
+        		$contentPath = 'Start/'.$eLang[38].'/'.substr($urlExtO,0,-1);
+        		$contentPath = str_replace("//","/",$contentPath);
+        	}
         }
 
         //then if php self match
@@ -253,7 +276,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 			}
 			$urlExtExp = explode("/",$urlExt);
 			$urlExtO = '';
-			for ($i = 0; $i < sizeof($urlExtExp); $i++) {
+			for($i = 0; $i < sizeof($urlExtExp); $i++) {
 				$urlExtO .= ucfirst($urlExtExp[$i]).'/';
 			}
 			$urlExtO = substr($urlExtO,0,-1);        	
@@ -262,7 +285,6 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
             	$contentPath = 'Start';
         	}        	
         }
-        
 
         // if not onePage checkout steps
         if(stristr($realUrl,'checkout/onepage/') == false) {
@@ -309,7 +331,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		if(stristr($realUrl,'/catalogsearch/advanced/result/?') != false) {
 			$searchQuery = '';
 			$searchCriterias = Mage::getSingleton('catalogsearch/advanced')->getSearchCriterias();
-			foreach ($searchCriterias as $val) {
+			foreach($searchCriterias as $val) {
 				$searchQuery .= $val['value'];
 			}
 			$productCollection = Mage::getSingleton('catalogsearch/advanced')->getProductCollection();
@@ -326,123 +348,115 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
        	$isAddBasket = false;
        	
 		//bugfix for basket after customer re-login
-		if (Mage::getSingleton('customer/session')->isLoggedIn() == 1) {
+		if(Mage::getSingleton('customer/session')->isLoggedIn() == 1) {
 			if($session->getData('econda_logged') != 1) {
 				$oldBasket = true;	
 			}
-			else {
+			else{
 				$oldBasket = false;
 			}
 		}
-		else {
+		else{
 			$oldBasket = false;
 		}
-            $nIdArray = array();
-            $nQtyArray = array();
-            $nNmeArray = array();
-            
-            $counter = 1;
-            
-			foreach ($session->getQuote()->getAllItems() as $item) {
-				$nIdArray[$counter] = $item->getproductId();
-				$nQtyArray[$counter] = $item->getQty();	
-				$nNmeArray[$counter] = $item->getItemId();
-				$counter += 1;
-			}
-			
-            if(!$session->getData('econda_card_id')){
-            	$session->setData('econda_card_id',$nIdArray);
-            	$session->setData('econda_card_qty',$nQtyArray);
-            	$session->setData('econda_card_nme',$nNmeArray);
-            	$oIdArray = $nIdArray;
-            	$oQtyArray = $nQtyArray;
-            	$oNmeArray = $nNmeArray;
-            	$eStarter = 1;
-            }
-            else {
-            	$oIdArray = $session->getData('econda_card_id');
-            	$oQtyArray = $session->getData('econda_card_qty');
-            	$oPrcArray = $session->getData('econda_card_prc');
-            	$oNmeArray = $session->getData('econda_card_nme');
-            	$eStarter = 0;            	
-            }
+        $nIdArray = array();
+        $nQtyArray = array();
+        $nNmeArray = array();
+        $counter = 1;
+        
+    	foreach($session->getQuote()->getAllItems() as $item) {
+			$nIdArray[$counter] = $item->getproductId();
+			$nQtyArray[$counter] = $item->getQty();	
+			$nNmeArray[$counter] = $item->getItemId();
+			$counter += 1;
+		}
+        if(!$session->getData('econda_card_id')){
+            $session->setData('econda_card_id',$nIdArray);
+            $session->setData('econda_card_qty',$nQtyArray);
+            $session->setData('econda_card_nme',$nNmeArray);
+            $oIdArray = $nIdArray;
+            $oQtyArray = $nQtyArray;
+            $oNmeArray = $nNmeArray;
+            $eStarter = 1;
+        }
+        else {
+            $oIdArray = $session->getData('econda_card_id');
+            $oQtyArray = $session->getData('econda_card_qty');
+            $oPrcArray = $session->getData('econda_card_prc');
+            $oNmeArray = $session->getData('econda_card_nme');
+            $eStarter = 0;            	
+        }
 
-           if(!$oldBasket) {
+        if(!$oldBasket) {
 			if($eStarter == 1) {
-				foreach ($session->getQuote()->getAllItems() as $item) {
-           					$getGroup = $this->getProductCategory($item->getproductId());
-         					if($getGroup) $prodGroup = $getGroup;
-        					else $prodGroup = $eLang[39];							
-							$eItem = new EMOS_Item();
-							$eItem->productName = $item->getName();
-							$eItem->productID = $item->getproductId();
-							$eItem->price = $this->convertPrice($item->getPrice());
-							$eItem->quantity = $item->getQty();
-					    	$eItem->productGroup = $prodGroup.'/'.$item->getName();
-					    	if($eItem->price != '0.00') {
-					    		$emos->addToBasket($eItem);
-					    	}
-							$isAddBasket = true;
+				foreach($session->getQuote()->getAllItems() as $item) {
+           		   $getGroup = $this->getProductCategory($item->getproductId());
+         		   if($getGroup) $prodGroup = $getGroup;
+        		   else $prodGroup = $eLang[39];							
+				   $eItem = new EMOS_Item();
+				   $eItem->productName = trim($item->getName());
+				   $eItem->productID = $item->getproductId();
+				   $eItem->price = $this->convertPrice($item->getPrice());
+				   $eItem->quantity = $item->getQty();
+				   $eItem->productGroup = $prodGroup.'/'.trim($item->getName());
+				   if($eItem->price != '0.00') {
+					  $emos->addToBasket($eItem);
+				   }
+				   $isAddBasket = true;
 				}			
 			}
 			else {
-				foreach ($session->getQuote()->getAllItems() as $item) {
-         			   $emosAction = false;	
-         			   $addRmv = false;
-					   $idKey = array_search($item->getItemId(),$oNmeArray);
-						
-						if($idKey == false) {
-							$emosAction = 'addBasket';
-							$basketQty = $item->getQty();
-						}
-						
-						if($idKey != false) {
-							
-							if($oQtyArray[$idKey] != $item->getQty()) {
-								if($oQtyArray[$idKey] > $item->getQty() && $oNmeArray[$idKey] == $item->getItemId()) {
-										$emosAction = 'rmvBasket';
-									$basketQty = $oQtyArray[$idKey] - $item->getQty();
-								}
-								if($oQtyArray[$idKey] < $item->getQty() && $oNmeArray[$idKey] == $item->getItemId()) {
-										$emosAction = 'addBasket';
-									$basketQty = $item->getQty() - $oQtyArray[$idKey];
-								}
+				foreach($session->getQuote()->getAllItems() as $item) {
+         			$emosAction = false;	
+         			$addRmv = false;
+					$idKey = array_search($item->getItemId(),$oNmeArray);
+					if($idKey == false) {
+					   $emosAction = 'addBasket';
+					   $basketQty = $item->getQty();
+					}
+        	        if($idKey != false) {
+						if($oQtyArray[$idKey] != $item->getQty()) {
+							if($oQtyArray[$idKey] > $item->getQty() && $oNmeArray[$idKey] == $item->getItemId()) {
+								$emosAction = 'rmvBasket';
+								$basketQty = $oQtyArray[$idKey] - $item->getQty();
+							}
+							if($oQtyArray[$idKey] < $item->getQty() && $oNmeArray[$idKey] == $item->getItemId()) {
+								$emosAction = 'addBasket';
+								$basketQty = $item->getQty() - $oQtyArray[$idKey];
 							}
 						}
-
-						if($emosAction != false) {
-         				    $getGroup = $this->getProductCategory($item->getproductId());
-         					if($getGroup) $prodGroup = $getGroup;
-        					else $prodGroup = $eLang[39];							
-							$eItem = new EMOS_Item();
-							$eItem->productName = $item->getName();
-							$eItem->productID = $item->getproductId();
-							$eItem->price = $this->convertPrice($item->getPrice()); 
-							$eItem->quantity = $basketQty;
-					    	$eItem->productGroup = $prodGroup.'/'.$item->getName();
-					    	
-						    	if($emosAction == 'addBasket' && stristr($this->getMessagesBlock()->getGroupedHtml(),'error-msg') == false && $eItem->price != '0.00') {
-					    			$emos->addToBasket($eItem);
-						    		$isAddBasket = true;
-						    		if(stristr($realUrl,'checkout/cart') == false) {
-						    			$addRmv = true;
-						    		}
-						    	}
-						    	if($emosAction == 'rmvBasket' && stristr($this->getMessagesBlock()->getGroupedHtml(),'error-msg') == false && $eItem->price != '0.00') {
-						    		if(!$addRmv) {
-						    			$emos->removeFromBasket($eItem);
-						    		}
-									$isAddBasket = true;
-					    		}
+					}
+					if($emosAction != false) {
+         				$getGroup = $this->getProductCategory($item->getproductId());
+         			    if($getGroup) $prodGroup = $getGroup;
+        				else $prodGroup = $eLang[39];							
+						$eItem = new EMOS_Item();
+						$eItem->productName = trim($item->getName());
+						$eItem->productID = $item->getproductId();
+						$eItem->price = $this->convertPrice($item->getPrice()); 
+						$eItem->quantity = $basketQty;
+					    $eItem->productGroup = $prodGroup.'/'.trim($item->getName());
+						if($emosAction == 'addBasket' && stristr($this->getMessagesBlock()->getGroupedHtml(),'error-msg') == false && $eItem->price != '0.00') {
+					       $emos->addToBasket($eItem);
+						   $isAddBasket = true;
+						   if(stristr($realUrl,'checkout/cart') == false) {
+						    	$addRmv = true;
+						    }
 						}
+						if($emosAction == 'rmvBasket' && stristr($this->getMessagesBlock()->getGroupedHtml(),'error-msg') == false && $eItem->price != '0.00') {
+						    if(!$addRmv) {
+						    	$emos->removeFromBasket($eItem);
+						    }
+							$isAddBasket = true;
+					    }
+					}
 				}
-				
 			}
         }
         
-			$session->setData('econda_card_qty',$nQtyArray);
-			$session->setData('econda_card_id',$nIdArray);
-			$session->setData('econda_card_nme',$nNmeArray);
+		$session->setData('econda_card_qty',$nQtyArray);
+		$session->setData('econda_card_id',$nIdArray);
+		$session->setData('econda_card_nme',$nNmeArray);
 			
         /*
 		 * emos addDetailView
@@ -453,11 +467,11 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
          	if($getGroup) $prodGroup = $getGroup;
         	else $prodGroup = $eLang[39];
 			$eItem = new EMOS_Item();
-			$eItem->productName = $item->getName();
+			$eItem->productName = trim($item->getName());
 			$eItem->productID = $item->getId();
 			$eItem->price = $this->convertPrice($item->getPrice());
 			$eItem->quantity = '1';
-			$eItem->productGroup = $prodGroup.'/'.$item->getName();
+			$eItem->productGroup = $prodGroup.'/'.trim($item->getName());
 			$emos->addDetailView($eItem);
        	}   				
 
@@ -481,31 +495,29 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
        	/*
        	 * emos addLogin
        	 */
-       		//login success
-       	 	$isLoggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
- 	
-       	 	if($isLoggedIn == 1 && $session->getData('econda_logged') != 2) {
-       	 		$session->setData('econda_logged','1');	
-       	 	}
-       	 	if($session->getData('econda_logged') == 1) {
-       	 		$customerId = Mage::getSingleton('customer/session')->getCustomerId();
-       	 		$emos->addLogin($customerId,0);
-       	 		$session->setData('econda_logged','2');
-       	 	}
+       	 //login success
+       	 $isLoggedIn = Mage::getSingleton('customer/session')->isLoggedIn();
+       	 if($isLoggedIn == 1 && $session->getData('econda_logged') != 2) {
+       	 	$session->setData('econda_logged','1');	
+       	 }
+       	 if($session->getData('econda_logged') == 1) {
+       	 	$customerId = Mage::getSingleton('customer/session')->getCustomerId();
+       	 	$emos->addLogin($customerId,0);
+       	 	$session->setData('econda_logged','2');
+       	 }
        	 	
-       	 	//login failed
-       	 	if(stristr($realUrl,'customer/account/login/') != false || stristr($realUrl,'checkout/multishipping/login/') != false){
-   	    	 	if(stristr($this->getMessagesBlock()->getGroupedHtml(),'error-msg') != false) {
-       		 		$customerId = Mage::getSingleton('customer/session')->getCustomerId();
-       		 		$emos->addLogin($customerId,1);
-       		 	}
-       	 	}
+       	 //login failed
+       	 if(stristr($realUrl,'customer/account/login/') != false || stristr($realUrl,'checkout/multishipping/login/') != false){
+   	    	 if(stristr($this->getMessagesBlock()->getGroupedHtml(),'error-msg') != false) {
+       		 	$customerId = Mage::getSingleton('customer/session')->getCustomerId();
+       		 	$emos->addLogin($customerId,1);
+       		 }
+       	 }
        	 	
-  	  /*
-  	   * emos orderProcess multishipping checkout
-  	   */
-       	switch ($stepCheckout) { 
-       		
+  	    /*
+  	     * emos orderProcess multishipping checkout
+  	     */
+         switch ($stepCheckout) { 
        		case 'LOGIN':	
        			$emos->addOrderProcess("2_".$eLang[0]);
        			break;
@@ -556,13 +568,12 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
        	 		$custId = $row['customer_id'];
        	 		$ordId = $lastOrderId;
        	 		$priceTotal = $this->convertPrice($row['grand_total']);
-
        	 		$custAdress = $custCountry.'/'.substr($custPostCode,0,1).'/'.substr($custPostCode,0,2).'/'.$custCity.'/'.$custPostCode;
        	 		$emos->addEmosBillingPageArray($ordId,$custId,$priceTotal,$custCountry,$custPostCode,$custCity);
 
-       	/*
-       	 * addEmosBasketPageArray checkout
-       	 */	       	 	
+       	   /*
+       	    * addEmosBasketPageArray checkout
+       	    */	       	 	
        	 		$basket = array();
        	 		$bCounter = 0;
        	 		$tableSfqi = $tablePrefix.'sales_flat_quote_item';
@@ -574,87 +585,109 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
     			 		if($getGroup) $prodGroup = $getGroup;
     			 		else $prodGroup = $eLang[39];
  	   			 		$eItem = new EMOS_Item();
-    			 		$eItem->productName = $row['name'];
+    			 		$eItem->productName = trim($row['name']);
     			 		$eItem->productID = $row['product_id'];
     		 			$eItem->price = $this->convertPrice($row['price']);
     		 			$eItem->quantity = number_format($row['qty'],0);
-    			 		$eItem->productGroup = $prodGroup.'/'.$row['name'];
+    			 		$eItem->productGroup = $prodGroup.'/'.trim($row['name']);
     			 		$basket[$bCounter] = $eItem;
     			 		$bCounter += 1;
        		 		}
     		 	}        		
-	
-       	 	$emos->addEmosBasketPageArray($basket);		
+       	 	    $emos->addEmosBasketPageArray($basket);		
 		}																
 			
 		$emosString .= $emos->toString();	
 		$emosString .= "\n<!-- End Econda-Monitor -->\n\n";
-
     	return $emosString;
     }
     
     /*
      * get highest level category path for a product
      */
-    private function getProductCategory($productId) {
-
-    		Mage::getSingleton('core/session', array('name'=>'frontend'));
-    		$db = Mage::getSingleton('core/resource')->getConnection('core_write');
-    		$tablePrefix = Mage::getConfig()->getTablePrefix();
-    		$tableCcp = $tablePrefix.'catalog_category_product';
-    	 	$result = $db->query("SELECT category_id FROM $tableCcp WHERE product_id = $productId");
-    	 	$getCatId = array();
-    	 	$count = 0;
-    	 	$isCategory = false;
-    	 	while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-    	 		$getCatId[$count] = $row['category_id'];
-    	 		$count += 1;
-    	 		$isCategory = true;
-    	 	}
-    	 	
-    	 	if($isCategory) {
-    	 	
- 		   	 	$catLevel = 0;
-    		 	for($i=0;$i<sizeof($getCatId);$i++) {
-    	 			$getCat = $getCatId[$i]; 
-    	 			$tableCce = $tablePrefix.'catalog_category_entity';
-    	 			$result = $db->query("SELECT level,path FROM $tableCce WHERE entity_id = $getCat");
- 		   	 		$row = $result->fetch(PDO::FETCH_ASSOC);
-    		 		
-    	 			if($catLevel < intval($row['level'])) {
-    	 				$catLevel = intval($row['level']);	
-    	 				$categoryId = $getCat;
-    	 				$catPath = explode('/',$row['path']);
-    		 		}
-    		 	}
-    		 	
-     		 	$tableCcev = $tablePrefix.'catalog_category_entity_varchar';
-    	 		$result = $db->query("SELECT attribute_id FROM $tableCcev WHERE value_id = 1");
-    	 		$row = $result->fetch(PDO::FETCH_ASSOC);
-    	 		$getEntidyId = $row['attribute_id'];
-
-    		 	$category = "";
-
-    		 	for($i=1;$i<sizeof($catPath);$i++) {
-    		 		$catId = intval($catPath[$i]);
-    	 			$result = $db->query("SELECT value FROM $tableCcev WHERE entity_id = $catId AND attribute_id = $getEntidyId");
-    	 			$row = $result->fetch(PDO::FETCH_ASSOC);    	 	
-    	 		    $category .= $row['value']."/";
-    		 	}
-				$category = substr($category,0,-1);
-    	  		return $category;
-    	 	}
-    	 	else {
-    	 		return false;
-    	 	}
+    private function getProductCategory($productId) 
+    {
+    	Mage::getSingleton('core/session', array('name'=>'frontend'));
+    	$db = Mage::getSingleton('core/resource')->getConnection('core_write');
+    	$tablePrefix = Mage::getConfig()->getTablePrefix();
+    	$tableCcp = $tablePrefix.'catalog_category_product';
+    	$result = $db->query("SELECT category_id FROM $tableCcp WHERE product_id = $productId");
+    	$getCatId = array();
+    	$count = 0;
+    	$isCategory = false;
+        
+    	while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+    	   $getCatId[$count] = $row['category_id'];
+    	   $count += 1;
+    	   $isCategory = true;
+    	}
+   	 	if($isCategory) {
+ 		   $catLevel = 0;
+    	   for($i=0;$i<sizeof($getCatId);$i++) {
+    	       $getCat = $getCatId[$i]; 
+    	 	   $tableCce = $tablePrefix.'catalog_category_entity';
+    	 	   $result = $db->query("SELECT level,path FROM $tableCce WHERE entity_id = $getCat");
+ 		   	   $row = $result->fetch(PDO::FETCH_ASSOC);
+ 	 		   if($catLevel < intval($row['level'])) {
+    	 	     $catLevel = intval($row['level']);	
+    	 		 $categoryId = $getCat;
+    	 		 $catPath = explode('/',$row['path']);
+    		   }
+    	   }
+     	   $tableCcev = $tablePrefix.'catalog_category_entity_varchar';
+    	   $result = $db->query("SELECT attribute_id FROM $tableCcev WHERE value_id = 1");
+    	   $row = $result->fetch(PDO::FETCH_ASSOC);
+    	   $getEntidyId = $row['attribute_id'];
+           
+  		   $category = "";
+ 		   for($i=1;$i<sizeof($catPath);$i++) {
+    		 	$catId = intval($catPath[$i]);
+    	 		$result = $db->query("SELECT value FROM $tableCcev WHERE entity_id = $catId AND attribute_id = $getEntidyId");
+    	 		$row = $result->fetch(PDO::FETCH_ASSOC);    	 	
+    	 		$category .= $row['value']."/";
+    	   }
+		   $category = substr($category,0,-1);
+    	   return $category;
+    	}
+    	else {
+    	 return false;
+    	}
     }
     
-    private function convertPrice($price) {
-    	
-    	$price = number_format($price,2);
+    private function convertPrice($price) 
+    {
+        $price = number_format($price,2);
     	$corPrice = substr($price,0,-3);
     	$corPrice = str_replace(',','',$corPrice);
     	$corPrice = str_replace('.','',$corPrice);
         return $corPrice.'.'.substr($price,-2);
     }
+    
+    private function emosVersion() 
+    {
+        $emFile = $_SERVER{'DOCUMENT_ROOT'}."/js/tracker/emos2.js";
+        if(file_exists($emFile)) {
+           $fp = @fopen($emFile,'r');
+           if($fp) {
+              $rl = fgets($fp,60);
+              fclose($fp);
+              if(stristr($rl,'EMOS_VERSION') != false) {
+                  $evp = strpos($rl,'EMOS_VERSION') ;
+                  $evsb = substr($rl,$evp+12,8);
+                  $evsb = str_replace('=','',$evsb);
+                  $evsb = str_replace('\'','',$evsb);
+                  $evsb = str_replace(',','',$evsb);
+                  $evsb = str_replace('pt','',$evsb);
+                  $evsb = str_replace('cm','',$evsb);
+                  $evbiv = intval($evsb);
+                  if($evbiv > 40) {
+                      return '2';
+                  }
+              }
+           }
+           return '1';
+        }
+        return '0';
+    }    
 }
+?>

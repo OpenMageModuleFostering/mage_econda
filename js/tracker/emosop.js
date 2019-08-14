@@ -25,6 +25,9 @@ function onePageTracker() {
 	if(stristr(document.getElementById('opc-billing').className,'active') != false && (sendOne == 1 || sendOne == 2)) {
 		orderProcess = '3_' + ecStep[1];
 		contentLabel = ecStep[6];
+		if(typeof(emospro.login) != 'undefined') {
+		   delete emospro.login;
+		}
 		if(sendOne == 1) {
 			sendOne += 1;
 		}
@@ -59,10 +62,9 @@ function onePageTracker() {
 	}		
 
 	if (orderProcess != '') {
-		  var properties = {};
-		  properties.orderProcess=orderProcess;
-		  properties.content='Start/' + ecStep[7] + '/' + contentLabel;
-		  window.emosPropertiesEvent(properties);
+		emospro.orderProcess=orderProcess;
+		emospro.content='Start/' + ecStep[7] + '/' + contentLabel;
+		window.emosPropertiesEvent(emospro);
 	}
 }
 
@@ -80,6 +82,3 @@ function stristr(haystack,needle,bool) {
         }
     }
 }
-
-
-

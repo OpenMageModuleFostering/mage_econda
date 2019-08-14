@@ -1,9 +1,8 @@
-
-		<?php
-		 $realUrlNoOp = Mage::helper('core/url')->getCurrentUrl();
-    		if(stristr($realUrlNoOp,'checkout/onepage/index/') == false) {
-				echo $this->getEmos();
-    		}	 
-		?>
+<?php
+    $realUrlNoOp = Mage::helper('core/url')->getCurrentUrl();
+    if(stristr($realUrlNoOp,'checkout/onepage/index/') == false) {
+		echo $this->getEmos();
+    }	 
+?>
 
  

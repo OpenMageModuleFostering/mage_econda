@@ -1,19 +1,17 @@
 <?php
-
-
 /*******************************************************************************
 * EMOS PHP Bib 2
-* $Id: emos.php,v 1.13 2007/08/17 08:40:33 unaegele Exp $
+* $Id: emos.php,v 1.15 2009/11/17 13:24:00 egaiser Exp $
 ********************************************************************************
 
-Copyright (c) 2004 - 2007 ECONDA GmbH Karlsruhe
+Copyright (c) 2004 - 2009 ECONDA GmbH Karlsruhe
 All rights reserved.
 
 ECONDA GmbH
-Haid-und-Neu-Str. 7
-76131 Karlsruhe
-Tel. +49 (721) 6630350
-Fax +49 (721) 66303510
+Eisenlohrstr. 43
+76135 Karlsruhe
+Tel.: 0721/663035-0
+Fax.: 0721 663035-10
 info@econda.de
 www.econda.de
 
@@ -43,6 +41,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Changes:
 
 $Log: emos.php,v $
+Revision 1.15  2009/11/17 13:24:00 egaiser
+update to handle anchor tags and properties array 
+added function trackMode to switch between anchor tags and properties array
+added function debugMode to show debug information 
+added function rmvCdata to remove CDATA tag for properties array
+added function addMarker 
+added function addTarget
+added function addGoal to set target conversion
+added function trackOnLoad to set automatic request on site load
+added function addScript for additional external Javascript integration 
+several changes in structural output and string encoding
+
+Revision 1.14  2009/02/19 09:52:56  unaegele
+if function not exists fix (Removed in Revision 1.15)
+
 Revision 1.13  2007/08/17 08:40:33  unaegele
 added function addEMOSCustomPageArray
 added function getEMOSCustomPageArray
@@ -79,68 +92,100 @@ Revision 1.2 added URL Encoding, Dataformat
 
 Revision 1.1 added 1st party session tracking
 
-
 */
 
-/** PHP Helper Class to construct a ECONDA Monitor statement for the later
+/* PHP Helper Class to construct a ECONDA Monitor statement for the later
 * inclusion in a HTML/PHP Page.
 */
 class EMOS {
 
-	/**
-	* the EMOS statement consists of 3 parts
-	* 1.   the inScript :<code><script type="text/javascript" src="emos2.js"></script>
-	* 2,3. a part before and after this inScript (preScript/postScript)</code>
-	*/
+    /* Here we store the predefined parameter list */
 	var $preScript = "";
 
-	/**
-	* Here we store the call to the js bib
-	*/
+	/* Here we store the additional script-files */
 	var $inScript = "";
 
-	/**
-	* if we must put something behind the call to the js bin we put it here
-	*/
+	/* Here we store additional parameters */
 	var $postScript = "";
 
-	/** path to the emos2.js script-file */
+	/* path to the emos2.js script-file */
 	var $pathToFile = "";
 
-	/** Name of the script-file */
+	/* Name of the script-file */
 	var $scriptFileName = "emos2.js";
-
-	/** if we use pretty print, we will set the lineseparator or tab here */
-	var $br = "\n";
-	var $tab = "\t";
 
 	/* session id for 1st party sessions*/
 	var $emsid = "";
 
 	/* visitor id for 1st partyx visitors */
 	var $emvid = "";
+	
+	/* start js and init properties */
+	var $jsStart = "<script type=\"text/javascript\">\n//<![CDATA[\n    var emospro = {};\n";
 
-	/**
+	/* end js and fire properties */
+	var $jsEnd = "    window.emosPropertiesEvent(emospro);\n//]]>\n</script>\n";
+	
+	/* emos2 inclusion */
+	var $emosBib = "";
+	
+	/* ec_event */
+	var $ecString = "";
+	
+	/* remove cdata */
+	var $rmvCdata = true;
+	
+	/* old style anchor tags*/
+	var $anchorTags = true;
+    
+    /* count basket items */
+    var $ecCounter = 0;
+    
+    /* send request on site load */
+    var $emosFire = true;
+    
+    /* main out */
+    var $retString = "";
+    
+    /* script to stopp request on site load */
+    var $emosStopRequest = "<script type=\"text/javascript\">\n//<![CDATA[\n    window.emosTrackVersion = 2;\n//]]>\n</script>\n";
+ 
+    /* Debug Mode */
+    var $emosDebug = 0;
+
+    /* CSS Style and Div for Debug */
+    var $debugOut = "\n<script type=\"text/javascript\">\n   function hideEcondaDebug(){\n      document.getElementById(\"econdaDebugTxt\").style.visibility = \"hidden\";\n      document.getElementById(\"econdaDebugStat\").style.visibility = \"hidden\";\n      document.getElementById(\"econdaDebug\").style.width = \"35px\";\n      document.getElementById(\"econdaDebug\").style.height = \"15px\";\n      document.getElementById(\"econdaDebugShow\").style.visibility = \"visible\";\n   }\n   function showEcondaDebug(){\n      document.getElementById(\"econdaDebugTxt\").style.visibility = \"visible\";\n      document.getElementById(\"econdaDebugStat\").style.visibility = \"visible\";\n      document.getElementById(\"econdaDebug\").style.width = \"auto\";\n      document.getElementById(\"econdaDebug\").style.height = \"auto\";\n      document.getElementById(\"econdaDebugShow\").style.visibility = \"hidden\";\n   }\n   function econdaDebug(dbtxt){\n      document.getElementById(\"econdaDebugTxt\").innerHTML = dbtxt;\n   }\n</script>\n<div name=\"econdaDebug\" id=\"econdaDebug\" style=\"position:absolute; visibility: visible; font-family: sans-serif; font-size: 12px; color: #FFFFFF; background-color: #0088B2; left: 0px; top: 0px; width: auto; height: auto; padding: 3px; z-index: 1000;\">\n<textarea style=\"min-width: 760px; font-family: sans-serif; font-size: 13px; background-color: #FFFFFF;\" name=\"econdaDebugTxt\" id=\"econdaDebugTxt\" wrap=\"off\" cols=\"120\" rows=\"22\">\n";                               
+    var $debugEnd = "</textarea>\n<div name=\"econdaDebugStat\" id=\"econdaDebugStat\" style=\"cursor: pointer; padding: 1px;\" align=\"right\" onClick=\"javascript:hideEcondaDebug();\">[econda debug mode]&nbsp;&nbsp;HIDE</div>\n<div name=\"econdaDebugShow\" id=\"econdaDebugShow\" style=\"position: absolute; visibility: hidden; top: 0px; left: 0px; cursor: pointer; z-index: 1001;\" onClick=\"javascript:showEcondaDebug();\">SHOW</div>\n</div>\n\n";
+	 	
+	/*
 	 * add compatibility function for php < 5.1
 	 */
 	function htmlspecialchars_decode_php4($str) {
 		return strtr($str, array_flip(get_html_translation_table(HTML_SPECIALCHARS)));
 	}
 
-	/** Constructor
+	/* Constructor
 	* Sets the path to the emos2.js js-bib and prepares the later calls
 	*
-	* @param $pathToFile The path to the js-bib (/opt/myjs)
+	* @param $pathToFile The path to the js-bib (/js)
 	* @param $scriptFileName If we want to have annother Filename than
-	*          emos2.js you can set it here
+	* emos2.js you can set it here
 	*/
 	function EMOS($pathToFile , $scriptFileName = "emos2.js") {
 		$this->pathToFile = $pathToFile;
-		$this->scriptFileName = $scriptFileName;
+        if(substr($this->pathToFile,-8) == 'emos2.js') {
+          $this->pathToFile = substr($this->pathToFile,0,strlen($this->pathToFile)-8);  
+        }           
+        if(substr($this->pathToFile,-1) != '/') {
+          $this->pathToFile .= '/';  
+        }
+        $this->scriptFileName = $scriptFileName;
+        if($this->scriptFileName == '' || $this->scriptFileName == null) {
+          $this->scriptFileName = 'emos2.js';  
+        }
 		$this->prepareInScript();
-
 	}
-
+    
 	/* formats data/values/params by eliminating named entities and xml-entities */
 	function emos_ItemFormat($item) {
 		$item->productID = $this->emos_DataFormat($item->productID);
@@ -154,46 +199,53 @@ class EMOS {
 
 	/* formats data/values/params by eliminating named entities and xml-entities */
 	function emos_DataFormat($str) {
-		$str = urldecode($str);
-		//2007-05-10 Fix incompatibility with php4
-		if (function_exists('htmlspecialchars_decode')) {
-			$str = htmlspecialchars_decode($str, ENT_QUOTES);
-		} else {
-			$str = $this->htmlspecialchars_decode_php4($str);
-		}
-		$str = html_entity_decode($str);
-		$str = strip_tags($str);
-		$str = trim($str);
+        if($this->anchorTags) {
+		    $str = urldecode($str);
+		    //2007-05-10 Fix incompatibility with php4
+	    	if (function_exists('htmlspecialchars_decode')) {
+			    $str = htmlspecialchars_decode($str, ENT_QUOTES);
+		    } else {
+		    	$str = $this->htmlspecialchars_decode_php4($str);
+		    }
+		    $str = html_entity_decode($str);
+		    $str = strip_tags($str);
+		    $str = trim($str);
 
-		//2007-05-10 replace translated &nbsp; with spaces
-		$nbsp = chr(0xa0);
-		$str = str_replace($nbsp, " ", $str);
-		$str = str_replace("\"", "", $str);
-		$str = str_replace("'", "", $str);
-		$str = str_replace("%", "", $str);
-		$str = str_replace(",", "", $str);
-		$str = str_replace(";", "", $str);
-		/* remove unnecessary white spaces*/
-		while (true) {
-			$str_temp = $str;
-			$str = str_replace("  ", " ", $str);
+		    //2007-05-10 replace translated &nbsp; with spaces
+		    $nbsp = chr(0xa0);
+		    $str = str_replace($nbsp, " ", $str);
+		    $str = str_replace("\"", "", $str);
+		    $str = str_replace("'", "", $str);
+		    $str = str_replace("%", "", $str);
+		    $str = str_replace(",", "", $str);
+		    $str = str_replace(";", "", $str);
+		    /* remove unnecessary white spaces */
+		    while (true) {
+			   $str_temp = $str;
+			   $str = str_replace("  ", " ", $str);
 
-			if ($str == $str_temp) {
+			   if ($str == $str_temp) {
 				break;
-			}
+			   }
+		    }
+		    $str = str_replace(" / ", "/", $str);
+		    $str = str_replace(" /", "/", $str);
+		    $str = str_replace("/ ", "/", $str);
+     	    $str = substr($str, 0, 254);
+			$str = rawurlencode($str);
 		}
-		$str = str_replace(" / ", "/", $str);
-		$str = str_replace(" /", "/", $str);
-		$str = str_replace("/ ", "/", $str);
-
-		$str = substr($str, 0, 254);
-		$str = rawurlencode($str);
+		else {
+            $str = utf8_decode($str);
+            $str = html_entity_decode($str);
+            $str = strip_tags($str);
+            $str = utf8_encode($str);
+			$str = addcslashes($str, "\\\"'&<>]");
+            $str = trim($str);
+		}
 		return $str;
 	}
 
-	/**
-	 * sets the 1st party session id
-	 */
+	/* set the 1st party session id */
 	function setSid($sid = "") {
 		if ($sid) {
 			$this->emsid = $sid;
@@ -201,9 +253,7 @@ class EMOS {
 		}
 	}
 
-	/**
-	 * set 1st party visitor id
-	 */
+	/* set the 1st party visitor id */
 	function setVid($vid = "") {
 		if ($vid) {
 			$this->emvid = $vid;
@@ -211,176 +261,315 @@ class EMOS {
 		}
 	}
 
-	/** switch on pretty printing of generated code. If not called, the output
-	* will be in one line of html.
-	*/
+	/* nothing to do. */
 	function prettyPrint() {
-		$this->br .= "\n";
-		$this->tab .= "\t";
 	}
 
-	/** Concatenates the current command and the $inScript */
+	/* Concatenates the current command and the $inScript */
 	function appendInScript($stringToAppend) {
 		$this->inScript .= $stringToAppend;
 	}
 
-	/** Concatenates the current command and the $proScript */
+	/* Concatenates the current command and the $proScript */
 	function appendPreScript($stringToAppend) {
 		$this->preScript .= $stringToAppend;
 	}
 
-	/** Concatenates the current command and the $postScript */
+	/* Concatenates the current command and the $postScript */
 	function appendPostScript($stringToAppend) {
 		$this->postScript .= $stringToAppend;
 	}
 
-	/** sets up the inScript Part with Initialisation Params */
+	/* returns the emos2.js inclusion */
 	function prepareInScript() {
-		$this->inScript .= "<script type=\"text/javascript\" " .
-		"src=\"" . $this->pathToFile . $this->scriptFileName . "\">" .
-		"</script>" . $this->br;
+		$this->emosBib .= "<script type=\"text/javascript\" src=\"".$this->pathToFile.$this->scriptFileName."\"></script>\n";
 	}
+    
+    /* returns a javascript extra inclusion at defined position */
+    function addScript($script) {
+        $this->emosBib .= "<script type=\"text/javascript\" src=\"".$script."\"></script>\n";
+    }    
 
-	/** returns the whole statement */
+	/* returns the whole statement */
 	function toString() {
-		return $this->preScript . $this->inScript . $this->postScript;
+		if(!$this->anchorTags){
+    		if($this->ecString != ""){
+    			$this->ecString = substr($this->ecString,0,-2)."\n";
+    			$this->ecString .= "    ];\n";
+    		}
+    		else {
+    			$this->ecString = "";
+    		}
+            if(!$this->emosFire) {
+                $this->jsEnd = str_replace("    window.emosPropertiesEvent(emospro);\n","",$this->jsEnd);
+            }            
+    		if($this->rmvCdata) {
+    			$this->jsStart = str_replace("\n//<![CDATA[","",$this->jsStart);
+   		 		$this->jsEnd = str_replace("//]]>\n","",$this->jsEnd);
+                $this->emosStopRequest = str_replace("\n//<![CDATA[","",$this->emosStopRequest);
+                $this->emosStopRequest = str_replace("\n//]]>","",$this->emosStopRequest);
+    		}
+		}
+    	if($this->anchorTags) { //anchor tags
+            if($this->ecString != "") {
+               $this->ecString .= "//]]>\n</script>\n"; 
+            }
+            if($this->rmvCdata) {
+                $this->preScript = str_replace("\n//<![CDATA[","",$this->preScript);
+                $this->preScript = str_replace("\n//]]>","",$this->preScript);
+                $this->ecString = str_replace("\n//<![CDATA[","",$this->ecString);
+                $this->ecString = str_replace("\n//]]>","",$this->ecString);                
+            }            
+            if($this->emosDebug > 0) {
+                $this->retString .= $this->debugOut . $this->preScript . $this->postScript . $this->ecString . $this->emosBib . $this->inScript . $this->debugEnd;  
+            }
+            if($this->emosDebug == 0 || $this->emosDebug == 2){
+                $this->retString .= $this->preScript . $this->postScript . $this->ecString . $this->emosBib . $this->inScript;
+            }
+    	}
+    	else {
+            if($this->emosDebug > 0) {
+                $this->retString .= $this->debugOut . $this->emosStopRequest . $this->emosBib . $this->jsStart . $this->preScript . $this->ecString . $this->postScript . $this->jsEnd . $this->inScript . $this->debugEnd; 
+            }
+            if($this->emosDebug == 0 || $this->emosDebug == 2){
+                $this->retString .= $this->emosStopRequest . $this->emosBib . $this->jsStart . $this->preScript . $this->ecString . $this->postScript . $this->jsEnd . $this->inScript;    
+            }    
+    	}
+        return $this->retString;
 	}
 
-	/** constructs a emos anchor tag */
+	/* constructs anchor tags */
 	function getAnchorTag($title = "", $rel = "", $rev = "") {
-
 		$rel = $this->emos_DataFormat($rel);
 		$rev = $this->emos_DataFormat($rev);
-		$anchor = "<a name=\"emos_name\" " .
-		"title=\"$title\" " .
-		"rel=\"$rel\" " .
-		"rev=\"$rev\"></a>$this->br";
+		$anchor = "<a name=\"emos_name\" title=\"".$title."\" rel=\"".$rel."\" rev=\"".$rev."\"></a>\n";
 		return $anchor;
-	}
+	}	
 
-	/** adds a anchor tag for content tracking
-	* <a name="emos_name" title="content" rel="$content" rev=""></a>
-	*/
-	function addContent($content) {
-		$this->appendPreScript($this->getAnchorTag("content", $content));
-	}
-
-	/** adds a anchor tag for orderprocess tracking
-	* <a name="emos_name" title="orderProcess" rel="$processStep" rev=""></a>
-	*/
-	function addOrderProcess($processStep) {
-		$this->appendPreScript($this->getAnchorTag("orderProcess", $processStep));
-	}
-
-	/** adds a anchor tag for siteid tracking
-	* <a name="emos_name" title="siteid" rel="$siteid" rev=""></a>
-	*/
-	function addSiteID($siteid) {
-		$this->appendPreScript($this->getAnchorTag("siteid", $siteid));
-	}
-
-	/** adds a anchor tag for language tracking
-	* <a name="emos_name" title="langid" rel="$langid" rev=""></a>
-	*/
-	function addLangID($langid) {
-		$this->appendPreScript($this->getAnchorTag("langid", $langid));
-	}
-
-	/** adds a anchor tag for country tracking
-	* <a name="emos_name" title="countryid" rel="$countryid" rev=""></a>
-	*/
-	function addCountryID($countryid) {
-		$this->appendPreScript($this->getAnchorTag("countryid", $countryid));
-	}
-
-	/**
-	 * adds a Page ID to the current window (window.emosPageId)
-	 */
-	function addPageID($pageID) {
-		$this->appendPreScript("\n<script type=\"text/javascript\">\n window.emosPageId = '$pageID';\n</script>\n\n");
-	}
-
-	/** adds a anchor tag for search tracking
-	* <a name="emos_name" title="search" rel="$queryString" rev="$numberOfHits"></a>
-	*/
-	function addSearch($queryString, $numberOfHits) {
-		$this->appendPreScript($this->getAnchorTag("search", $queryString, $numberOfHits));
-	}
-
-	/** adds a anchor tag for registration tracking
-	* The userid gets a md5() to fullfilll german datenschutzgesetz
-	* <a name="emos_name" title="register" rel="$userID" rev="$result"></a>
-	*/
-	function addRegister($userID, $result) {
-		$this->appendPreScript($this->getAnchorTag("register", md5($userID), $result));
-	}
-
-	/** adds a anchor tag for login tracking
-	*The userid gets a md5() to fullfilll german datenschutzgesetz
-	* <a name="emos_name" title="login" rel="$userID" rev="$result"></a>
-	*/
-	function addLogin($userID, $result) {
-		$this->appendPreScript($this->getAnchorTag("login", md5($userID), $result));
-	}
-
-	/** adds a anchor tag for contact tracking
-	* <a name="emos_name" title="scontact" rel="$contactType" rev=""></a>
-	*/
-	function addContact($contactType) {
-		$this->appendPreScript($this->getAnchorTag("scontact", $contactType));
-	}
-
-	/** adds a anchor tag for download tracking
-	* <a name="emos_name" title="download" rel="$downloadLabel" rev=""></a>
-	*/
-	function addDownload($downloadLabel) {
-		$this->appendPreScript($this->getAnchorTag("download", $downloadLabel));
-	}
-
-	/** constructs a emosECPageArray of given $event type
-	* @param $item a instance of class EMOS_Item
-	* @param $event Type of this event ("add","c_rmv","c_add")
-	*/
-	function getEmosECPageArray($item, $event) {
-
-		$item = $this->emos_ItemFormat($item);
-
-		$out = "";
-		$out .= "<script type=\"text/javascript\">$this->br" .
-		"<!--$this->br" .
-		"$this->tab var emosECPageArray = new Array();$this->br" .
-		"$this->tab emosECPageArray['event'] = '$event';$this->br" .
-		"$this->tab emosECPageArray['id'] = '$item->productID';$this->br" .
-		"$this->tab emosECPageArray['name'] = '$item->productName';$this->br" .
-		"$this->tab emosECPageArray['preis'] = '$item->price';$this->br" .
-		"$this->tab emosECPageArray['group'] = '$item->productGroup';$this->br" .
-		"$this->tab emosECPageArray['anzahl'] = '$item->quantity';$this->br" .
-		"$this->tab emosECPageArray['var1'] = '$item->variant1';$this->br" .
-		"$this->tab emosECPageArray['var2'] = '$item->variant2';$this->br" .
-		"$this->tab emosECPageArray['var3'] = '$item->variant3';$this->br" .
-		"// -->$this->br" .
-		"</script>$this->br";
+	/* constructs a js property event */
+	function getProperty($title = "", $rel = "", $rev = "", $brck = false) {
+		if($this->anchorTags) {
+			return $this->getAnchorTag($title, $rel, $rev);
+		}
+		$rel = $this->emos_DataFormat($rel);
+		$rev = $this->emos_DataFormat($rev);
+		$setRev = false;
+		if(trim($rev) != "") {
+			$setRev = true;
+		}		
+		$out = "    emospro.".$title." = ";
+		if($setRev) {
+			$out .= "[[";
+		}
+		$out .= "'".$rel."'";
+		if($setRev) {
+			if($brck) {
+				$out .= "]]";
+			}
+			else {
+				$out .= ",'".$rev."']]";
+			}	
+		}
+		$out .= ";\n";
 		return $out;
 	}
 
-	/** constructs a emosBillingPageArray of given $event type */
+	/* adds a property event for marker tracking
+	*  emospro.marker = content
+	*/
+	function addMarker($content) {
+		$this->appendPreScript($this->getProperty("marker", $content, "", true));
+	}
+ 
+    /* adds a property event for target tracking
+    *  emospro.Target = [[group,name]]
+    */  
+    function addTarget($group, $name) {
+        $this->appendPreScript($this->getProperty("Target", $group, $name));
+    }
+    
+    /* adds a property event for target conversion
+    *  emospro.cGoal = 0 or 1
+    */     
+    function addGoal($goal) {
+        $this->appendPreScript($this->getProperty("cGoal", $goal));
+    }    
+
+	/* remove CDATA from script */
+	function addCdata() {
+		$this->rmvCdata = false;
+	}	
+
+    /* set tracking mode 
+     * 2 = js properties, everything else = anchor tags
+    */ 
+    function trackMode($mode) {
+        if($mode == 2) {
+           $this->anchorTags = false; 
+        }
+    }
+    
+    /* send request on site load
+     * true or false
+    */
+    function trackOnLoad($send) {
+        $this->emosFire = $send;
+    }
+ 
+    /* show debug informations inside a container 
+     *  1 = debug only, 2 = debug and send request
+     */    
+    function debugMode($send) {
+        $this->emosDebug = $send;
+    }    
+
+	/* adds a property event for content tracking
+	*   emospro.content = content
+	*/
+	function addContent($content) {
+		$this->appendPreScript($this->getProperty("content", $content));
+	}
+
+	/* adds a property event for orderprocess tracking
+	*  emospro.orderProcess = processStep
+	*/
+	function addOrderProcess($processStep) {
+		$this->appendPreScript($this->getProperty("orderProcess", $processStep));
+	}
+
+	/* adds a property event for siteid tracking
+	*  emospro.siteid = siteid
+	*/
+	function addSiteID($siteid) {
+		$this->appendPreScript($this->getProperty("siteid", $siteid));
+	}
+
+	/* adds a property event for language tracking
+	*  emospro.langid = langid
+	*/
+	function addLangID($langid) {
+		$this->appendPreScript($this->getProperty("langid", $langid));
+	}
+
+	/* adds a property event for country tracking
+	*  emospro.countryid = countryid
+	*/
+	function addCountryID($countryid) {
+		$this->appendPreScript($this->getProperty("countryid", $countryid));
+	}
+
+	/* adds a property event for pageid tracking
+	*  emospro.pageid = pageID
+	*/
+	function addPageID($pageID) {
+		if(!$this->anchorTags) {
+			$this->appendPreScript($this->getProperty("pageId", $pageID));
+		}
+		else {
+             $this->appendPreScript("<script type=\"text/javascript\">\n//<![CDATA[\n    window.emosPageId = '$pageID';\n//]]>\n</script>\n"); 
+		}
+	}
+
+	/* adds a property event for search tracking
+	*  emospro.search = [[queryString,numberOfHits]]
+	*/
+	function addSearch($queryString, $numberOfHits) {
+		$this->appendPreScript($this->getProperty("search", $queryString, $numberOfHits));
+	}
+
+	/* adds a property event for registration tracking
+	*  The userid gets a md5() to fullfilll german datenschutzgesetz
+	*  emospro.register = [[userID,result]]       //(result: 0=true,1=false)
+	*/
+	function addRegister($userID, $result) {
+		$this->appendPreScript($this->getProperty("register", md5($userID), $result));
+	}
+
+	/* adds a property event for login tracking
+	*  The userid gets a md5() to fullfilll german datenschutzgesetz
+	*  emospro.login = [[userID,result]]       //(result: 0=true,1=false)
+	*/
+	function addLogin($userID, $result) {
+		$this->appendPreScript($this->getProperty("login", md5($userID), $result));
+	}
+
+	/* adds a property event for contact tracking
+	*  emospro.scontact = contactType
+	*/
+	function addContact($contactType) {
+		$this->appendPreScript($this->getProperty("scontact", $contactType));
+	}
+
+	/* adds a property event for download tracking
+	*  emospro.download = downloadLabel
+	*/
+	function addDownload($downloadLabel) {
+		$this->appendPreScript($this->getProperty("download", $downloadLabel));
+	}
+
+	/* constructs a emosECPageArray of given $event type
+	*  @param $item a instance of class EMOS_Item
+	*  @param $event Type of this event ("add","c_rmv","c_add")
+	*/
+	function getEmosECPageArray($item, $event) {
+		if(!$this->anchorTags){
+			$item = $this->emos_ItemFormat($item);
+            if($this->ecString == "") {
+              $this->ecString .= "    emospro.ec_Event = [\n";
+            }
+			$this->ecString .= "       ['".$event."','".$item->productID."','".$item->productName."','".$item->price."','".$item->productGroup."','".$item->quantity."','".$item->variant1."','".$item->variant2."','".$item->variant2."'],\n";
+		}
+		else { //anchor tags
+			$item = $this->emos_ItemFormat($item);
+            if($this->ecCounter == 0) {
+              $this->ecString .= "<script type=\"text/javascript\">\n//<![CDATA[\n"; 
+              $this->ecString .= "    var emosECPageArray = new Array();\n";
+            }
+            $this->ecString .="    emosECPageArray[".$this->ecCounter."] = new Array();\n" .
+            "    emosECPageArray[".$this->ecCounter."]['event'] = '".$event."';\n" .
+            "    emosECPageArray[".$this->ecCounter."]['id'] = '".$item->productID."';\n" .
+            "    emosECPageArray[".$this->ecCounter."]['name'] = '".$item->productName."';\n" .
+            "    emosECPageArray[".$this->ecCounter."]['preis'] = '".$item->price."';\n" .
+            "    emosECPageArray[".$this->ecCounter."]['group'] = '".$item->productGroup."';\n" .
+            "    emosECPageArray[".$this->ecCounter."]['anzahl'] = '".$item->quantity."';\n" .
+            "    emosECPageArray[".$this->ecCounter."]['var1'] = '".$item->variant1."';\n" .
+            "    emosECPageArray[".$this->ecCounter."]['var2'] = '".$item->variant2."';\n" .
+            "    emosECPageArray[".$this->ecCounter."]['var3'] = '".$item->variant3."';\n" ;
+           $this->ecCounter += 1;
+		}
+	}
+	
+	/* adds a detailView to the preScript */
+	function addDetailView($item) {
+		$this->getEmosECPageArray($item, "view");
+	}
+
+	/* adds a removeFromBasket to the preScript */
+	function removeFromBasket($item) {
+		$this->getEmosECPageArray($item, "c_rmv");
+	}
+
+	/* adds a addToBasket to the preScript */
+	function addToBasket($item) {
+		$this->getEmosECPageArray($item, "c_add");
+	}	
+
+	/* constructs a emosBillingPageArray of given $event type */    
 	function addEmosBillingPageArray($billingID = "", $customerNumber = "", $total = 0, $country = "", $cip = "", $city = "") {
 		$out = $this->getEmosBillingArray($billingID, $customerNumber, $total, $country, $cip, $city, "emosBillingPageArray");
 		$this->appendPreScript($out);
 	}
 
-	/** gets a emosBillingArray for a given ArrayName */
+	/* gets a emosBillingArray for a given ArrayName 
+	*  md5 the customer id to to fullfilll german datenschutzgesetz
+	*/	
 	function getEmosBillingArray($billingID = "", $customerNumber = "", $total = 0, $country = "", $cip = "", $city = "", $arrayName = "") {
-
-		/******************* prepare data *************************************/
-		/* md5 the customer id to fullfill requirements of german datenschutzgeesetz */
 		$customerNumber = md5($customerNumber);
-
 		$country = $this->emos_DataFormat($country);
 		$cip = $this->emos_DataFormat($cip);
 		$city = $this->emos_DataFormat($city);
 
-		/* get a / separated location stzring for later drilldown */
+		/* get a / separated location string for later drilldown */
 		$ort = "";
 		if ($country) {
 			$ort .= "$country/";
@@ -394,98 +583,99 @@ class EMOS {
 		if ($cip) {
 			$ort .= $cip;
 		}
-
-		/******************* get output** *************************************/
-		/* get the real output of this funktion */
-		$out = "";
-		$out .= "<script type=\"text/javascript\">$this->br" .
-		"<!--$this->br" .
-		"$this->tab var $arrayName = new Array();$this->br" .
-		"$this->tab $arrayName" . "[0] = '$billingID';$this->br" .
-		"$this->tab $arrayName" . "[1] = '$customerNumber';$this->br" .
-		"$this->tab $arrayName" . "[2] = '$ort';$this->br" .
-		"$this->tab $arrayName" . "[3] = '$total';$this->br" .
-		"// -->$this->br" .
-		"</script>$this->br";
-		return $out;
-	}
-
-	/** adds a emosBasket Page Array to the preScript */
-	function addEmosBasketPageArray($basket) {
-		$out = $this->getEmosBasketPageArray($basket, "emosBasketPageArray");
-		$this->appendPreScript($out);
-	}
-
-	/** returns a emosBasketArray of given Name */
-	function getEmosBasketPageArray($basket, $arrayName) {
-		$out = "";
-		$out .= "<script type=\"text/javascript\">$this->br" .
-		"<!--$this->br" .
-		"var $arrayName = new Array();$this->br";
-		$count = 0;
-		foreach ($basket as $item) {
-
-			$item = $this->emos_ItemFormat($item);
-
-			$out .= $this->br;
-			$out .= "$this->tab $arrayName" . "[$count]=new Array();$this->br";
-			$out .= "$this->tab $arrayName" . "[$count][0]='$item->productID';$this->br";
-			$out .= "$this->tab $arrayName" . "[$count][1]='$item->productName';$this->br";
-			$out .= "$this->tab $arrayName" . "[$count][2]='$item->price';$this->br";
-			$out .= "$this->tab $arrayName" . "[$count][3]='$item->productGroup';$this->br";
-			$out .= "$this->tab $arrayName" . "[$count][4]='$item->quantity';$this->br";
-			$out .= "$this->tab $arrayName" . "[$count][5]='$item->variant1';$this->br";
-			$out .= "$this->tab $arrayName" . "[$count][6]='$item->variant2';$this->br";
-			$out .= "$this->tab $arrayName" . "[$count][7]='$item->variant3';$this->br";
-			$count++;
+		if(!$this->anchorTags){
+			$out = "    emospro.billing = [['".$billingID."','".$customerNumber."','".$ort."','".$total."']];\n";
 		}
-		$out .= "// -->$this->br" .
-		"</script>$this->br";
-
+		else { //anchor tags
+			$out = "<script type=\"text/javascript\">\n//<![CDATA[\n" .
+			"    var ".$arrayName." = new Array();\n" .
+			"    ".$arrayName."[0] = '".$billingID."';\n" .
+			"    ".$arrayName."[1] = '".$customerNumber."';\n" .
+			"    ".$arrayName."[2] = '".$ort."';\n" .
+			"    ".$arrayName."[3] = '".$total."';\n" .
+			"//]]>\n</script>\n";			
+		}
 		return $out;
 	}
 
-	/** adds a detailView to the preScript */
-	function addDetailView($item) {
-		$this->appendPreScript($this->getEmosECPageArray($item, "view"));
+	/* adds a emosBasket Page Array*/
+	function addEmosBasketPageArray($basket) {
+		if(!$this->anchorTags){
+			$this->getEmosBasketPageArray($basket, "buy");
+		}
+		else {
+			$this->getEmosBasketPageArray($basket, "emosBasketPageArray");
+		}
 	}
 
-	/** adds a removeFromBasket to the preScript */
-	function removeFromBasket($item) {
-		$this->appendPreScript($this->getEmosECPageArray($item, "c_rmv"));
+	/* returns a emosBasketArray of given Name */
+	function getEmosBasketPageArray($basket, $event) {
+		if(!$this->anchorTags){
+            if($this->ecString == "") {
+              $this->ecString .= "    emospro.ec_Event = [\n";
+            }            
+			foreach ($basket as $item) {
+				$item = $this->emos_ItemFormat($item);
+				$this->ecString .= "       ['".$event."','".$item->productID."','".$item->productName."','".$item->price."','".$item->productGroup."','".$item->quantity."','".$item->variant1."','".$item->variant2."','".$item->variant2."'],\n";		
+			}
+		}
+		else {  
+			$out = "<script type=\"text/javascript\">\n//<![CDATA[\n" .
+			"    var ".$event." = new Array();\n";
+			$count = 0;
+			foreach ($basket as $item) {
+				$item = $this->emos_ItemFormat($item);
+				$out .= "    ".$event."[".$count."]=new Array();\n";
+				$out .= "    ".$event."[".$count."][0]='".$item->productID."';\n";
+				$out .= "    ".$event."[".$count."][1]='".$item->productName."';\n";
+				$out .= "    ".$event."[".$count."][2]='".$item->price."';\n";
+				$out .= "    ".$event."[".$count."][3]='".$item->productGroup."';\n";
+				$out .= "    ".$event."[".$count."][4]='".$item->quantity."';\n";
+				$out .= "    ".$event."[".$count."][5]='".$item->variant1."';\n";
+				$out .= "    ".$event."[".$count."][6]='".$item->variant2."';\n";
+				$out .= "    ".$event."[".$count."][7]='".$item->variant3."';\n";
+				$count++;
+			}
+            $out .= "//]]>\n</script>\n";
+			$this->appendPreScript($out);		
+		}
 	}
 
-	/** adds a addToBasket to the preScript */
-	function addToBasket($item) {
-		$this->appendPreScript($this->getEmosECPageArray($item, "c_add"));
-	}
-	
-	/**
+	/*
 	 * constructs a generic EmosCustomPageArray from a PHP Array 
 	 */
  	function getEmosCustomPageArray($listOfValues){
-		
 		$out = "";
-		$out .= "<script type=\"text/javascript\">$this->br" .
-		"<!--$this->br" .
-		"$this->tab var emosCustomPageArray = new Array();$this->br"; 
-		
-		$counter = 0;
-		foreach ($listOfValues as $value) {
-			
-			$value = $this->emos_DataFormat($value);
-			$out .= "$this->tab emosCustomPageArray[$counter] = '$value';$this->br";
-			$counter ++;
+		if(!$this->anchorTags){
+			$counter = 0;
+			foreach ($listOfValues as $value) {
+				$value = $this->emos_DataFormat($value);				
+				if($counter == 0) {
+					$out .= "    emospro.".$value." = [[";					
+				}
+				else {
+					$out .= "'".$value."',";
+				}
+				$counter += 1;
+			}			
+			$out = substr($out,0,-1);
+			$out .= "]];\n";
 		}
-		$out .= "// -->$this->br" ."</script>$this->br";
-		return $out;
-		
-		
-		
+ 		else {
+			$out .= "<script type=\"text/javascript\">\n"; 
+    		$out .= "    window.emosCustomPageArray = [";
+			foreach ($listOfValues as $value) {
+				$value = $this->emos_DataFormat($value);
+				$out .= "'".$value."',";
+			}
+			$out = substr($out,0,-1);
+			$out .= "];\n";
+			$out .= "</script>\n";
+ 		}
+        $this->appendPreScript($out);        
 	}
-	
-	
-	/** constructs a emosCustomPageArray with 8 Variables and shortcut
+
+	/* constructs a emosCustomPageArray with 8 Variables and shortcut
 	* @param $cType Type of this event - shortcut in config
 	* @param $cVar1 first variable of this custom event (optional)
 	* @param $cVar2 second variable of this custom event (optional)
@@ -501,10 +691,7 @@ class EMOS {
 	* @param $cVar12 twelveth variable of this custom event (optional)
 	* @param $cVar13 thirteenth variable of this custom event (optional)
 	*/
-	function addEmosCustomPageArray($cType=0, $cVar1=0, $cVar2=0, $cVar3=0, $cVar4=0, 
-									$cVar5=0, $cVar6=0, $cVar7=0, $cVar8=0, $cVar9=0,
-									 $cVar10=0, $cVar11=0, $cVar12=0, $cVar13=0) {
-							 
+	function addEmosCustomPageArray($cType=0, $cVar1=0, $cVar2=0, $cVar3=0, $cVar4=0, $cVar5=0, $cVar6=0, $cVar7=0, $cVar8=0, $cVar9=0, $cVar10=0, $cVar11=0, $cVar12=0, $cVar13=0) {
 		$values[0] = $cType;
 		if($cVar1) $values[1] = $cVar1;
 		if($cVar2) $values[2] = $cVar2;
@@ -519,14 +706,12 @@ class EMOS {
 		if($cVar11) $values[11] = $cVar11;
 		if($cVar12) $values[12] = $cVar12;
 		if($cVar13) $values[13] = $cVar13;
-		
-		$this->appendPreScript($this->getEmosCustomPageArray($values));
+		$this->getEmosCustomPageArray($values);
 	}
-
 }
+/* EMOS class end */
 
-/** global Functions */
-
+/* global Functions */
 function getEmosECEvent($item, $event) {
 	$item = $this->emos_ItemFormat($item);
 	$out = "";
@@ -564,7 +749,7 @@ function getEMOSBasketEventArray($basket) {
 	return $b->getEmosBasketArray($basket, "emosBasketArray");
 }
 
-/** A Class to hold products as well a basket items
+/* A Class to hold products as well a basket items
 * If you want to track a product view, set the quantity to 1.
 * For "real" basket items, the quantity should be given in your
 * shopping systems basket/shopping cart.
