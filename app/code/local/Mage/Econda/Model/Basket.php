@@ -73,7 +73,8 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
             $category = "";
             for($i=0;$i<sizeof($catPath);$i++) {
                 $catId = intval($catPath[$i]);
-                $category .= Mage::getModel('catalog/category')->load($catId)->getName()."/";
+                //$category .= Mage::getModel('catalog/category')->load($catId)->getName()."/";
+				$category .= str_replace('/', '|', Mage::getModel('catalog/category')->load($catId)->getName()). "/";
             }
             $category = substr($category,0,-1);
             if(substr($category, 0, 1) == '/') {
@@ -175,7 +176,7 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
         }
         $eItem->price = $this->convertPrice($priceTax);
         $eItem->quantity = '1';
-        $eItem->productGroup = $prodGroup.'/'.trim($item->getName());
+        $eItem->productGroup = $prodGroup.'/'. str_replace('/', ' ', trim($item->getName()));
         return $eItem;
     }
 

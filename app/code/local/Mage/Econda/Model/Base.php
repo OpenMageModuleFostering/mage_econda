@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Magento
  *
@@ -193,9 +193,11 @@ class Mage_Econda_Model_Base extends Mage_Core_Model_Abstract
         $getPath = Mage::helper('catalog')->getBreadcrumbPath($this->getCategory());
         if(sizeof($getPath) > 0) {
             foreach($getPath as $pathID) {
-                $contentPath .= '/'.$pathID['label'];
+                //$contentPath .= '/'.$pathID['label'];
+				$pathLabel = str_replace('/', ' ', $pathID['label']);
+                $contentPath .= '/' . $pathLabel;
             }
-        }
+        } 
         return $contentPath;
     }
 
