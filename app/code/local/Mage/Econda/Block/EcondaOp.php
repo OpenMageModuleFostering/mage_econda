@@ -14,7 +14,7 @@
  *
  * @category    Mage
  * @package     Mage_Econda
- * @copyright   Copyright (c) 2012 econda GmbH (http://www.econda.de)
+ * @copyright   Copyright (c) 2013 econda GmbH (http://www.econda.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -66,7 +66,7 @@ class Mage_Econda_Block_EcondaOp extends Mage_Core_Block_Template
                 $emosLogin .= "    emospro.login = [['".$customerId."','0']];\n";
                 $opsession->setData('econda_logged','2');
             }
-            $emosOut = "\n\n<!-- Start Econda-Monitor M160 -->\n";
+            $emosOut = "\n\n<!-- Start Econda-Monitor M161 -->\n";
             $emosOut .= "<script type=\"text/javascript\">\n//<![CDATA[\n";
             $emosOut .= "    window.emosTrackVersion = 2;\n";
             $emosOut .= "//]]>\n</script>";

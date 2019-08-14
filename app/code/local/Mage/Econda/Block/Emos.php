@@ -4,7 +4,7 @@
  * $Id: emos.php,v 1.15 2009/11/17 13:24:00 egaiser Exp $
  ********************************************************************************
 
- Copyright (c) 2004 - 2012 ECONDA GmbH Karlsruhe
+ Copyright (c) 2004 - 2013 ECONDA GmbH Karlsruhe
  All rights reserved.
 
  ECONDA GmbH

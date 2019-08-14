@@ -14,7 +14,7 @@
  *
  * @category    Mage
  * @package     Mage_Econda
- * @copyright   Copyright (c) 2012 econda GmbH (http://www.econda.de)
+ * @copyright   Copyright (c) 2013 econda GmbH (http://www.econda.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -89,7 +89,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
         $pageRoute = Mage::app()->getRequest()->getRouteName();
         $PageName = Mage::getSingleton('cms/page')->getIdentifier();
 
-        if($pageRoute != 'cms' && $PageName != 'home') {        
+        if(($pageRoute != 'cms' && $PageName != 'home') || $contentPath == 'Start') {        
             if(trim($contentPath) == 'Start' || trim($contentPath) == 'Start/') {
                 $contentPath = str_replace('/','',$contentPath);
                 $contentPath .= Mage::getModel('econda/base')->getContentDefault();
@@ -237,7 +237,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
         /**
          * Display script code
          */
-        $emosString = "\n\n<!-- Start Econda-Monitor M160 -->\n";
+        $emosString = "\n\n<!-- Start Econda-Monitor M161 -->\n";
         $emosString .= $emos->toString();
         $emosString .= "<!-- End Econda-Monitor -->\n\n";
 
