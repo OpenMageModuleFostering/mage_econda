@@ -11,7 +11,7 @@
 <config>
     <modules>
         <Mage_Econda>
-            <version>1.6.4</version>
+            <version>1.6.7</version>
         </Mage_Econda>
     </modules>
     <frontend>

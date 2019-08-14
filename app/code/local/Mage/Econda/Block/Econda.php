@@ -237,7 +237,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
         /**
          * Display script code
          */
-        $emosString = "\n\n<!-- Start Econda-Monitor M161 -->\n";
+        $emosString = "\n\n<!-- Start Econda-Monitor M167 -->\n";
         $emosString .= $emos->toString();
         $emosString .= "<!-- End Econda-Monitor -->\n\n";
 

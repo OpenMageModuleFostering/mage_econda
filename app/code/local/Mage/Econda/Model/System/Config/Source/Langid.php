@@ -14,14 +14,14 @@
  *
  * @category    Mage
  * @package     Mage_Econda
- * @copyright   Copyright (c) 2015 econda GmbH (http://www.econda.de)
+ * @copyright   Copyright (c) 2017 econda GmbH (http://www.econda.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 class Mage_Econda_Model_System_Config_Source_Langid
 {
     
    /**
-    * returns the value for siteid field in backend
+    * returns the value for langid field in backend
     */     
     public function toOptionArray()
     {
