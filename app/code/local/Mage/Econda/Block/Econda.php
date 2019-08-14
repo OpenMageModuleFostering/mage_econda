@@ -42,7 +42,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  ECONDA Tracking into Magento Shop-Systems.
  */
 
-
 require_once("app/Mage.php");
 Mage::app ();
 
@@ -82,7 +81,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		/*
 		 * start of emos string
 		 */
-	    $emosString = "\n\n<!-- Start Econda-Monitor M102 -->\n\n";
+	    $emosString = "\n\n<!-- Start Econda-Monitor M103 -->\n\n";
 
 		$emos = new EMOS($pathToFile);
 		
@@ -299,8 +298,8 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		if(Mage::helper('catalogSearch')->getQueryText() != null) {
 			$searchQuery = Mage::helper('catalogSearch')->getQueryText();
 			$getQuery = Mage::helper('catalogSearch')->getQuery();
-			$splitQuery = explode(',',$getQuery);
-			$searchHits = $splitQuery[2];
+            $searchQuery = $getQuery->query_text; 
+            $searchHits = $getQuery->num_results; 
 			$emos->addSearch($searchQuery, $searchHits);
 		}
 
