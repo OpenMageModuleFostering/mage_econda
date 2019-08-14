@@ -101,7 +101,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		/*
 		 * start of emos string
 		 */
-	    $emosString = "\n\n<!-- Start Econda-Monitor M113 -->\n\n";
+	    $emosString = "\n\n<!-- Start Econda-Monitor M114 -->\n\n";
 
 		$emos = new EMOS($pathToFile);
         
@@ -611,26 +611,26 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
  					$row = $result->fetch(PDO::FETCH_ASSOC);          		 		
 					$lastOrderId = $row['reserved_order_id'];
        		 	}
-       	 	    $tableSfqa = $tablePrefix.'sales_flat_quote_address'; 
-				$result = $db->query("SELECT customer_id,city,postcode,country_id,grand_total,subtotal,tax_amount,shipping_tax_amount FROM $tableSfqa WHERE quote_id = $entityId and address_type = 'shipping'");
- 				$row = $result->fetch(PDO::FETCH_ASSOC);
-        		$custCountry = $row['country_id'];        	 		
-       	 		$custPostCode = $row['postcode'];
-       	 		$custCity = $row['city'];
-       	 		$custId = $row['customer_id'];
-       	 		$ordId = $lastOrderId;
+                $tableSfqa = $tablePrefix.'sales_flat_quote_address'; 
+                $result = $db->query("SELECT customer_id,city,postcode,country_id,base_grand_total,base_subtotal,base_tax_amount,base_shipping_tax_amount FROM $tableSfqa WHERE quote_id = $entityId and address_type = 'shipping'");
+                $row = $result->fetch(PDO::FETCH_ASSOC);
+                $custCountry = $row['country_id'];                  
+                $custPostCode = $row['postcode'];
+                $custCity = $row['city'];
+                $custId = $row['customer_id'];
+                $ordId = $lastOrderId;
                 if(Mage::getStoreConfig($billingOption, $storeId) == '1') {
-                    $priceTotal = $row['subtotal'];
+                    $priceTotal = $row['base_subtotal'];
                 }
                 else if(Mage::getStoreConfig($billingOption, $storeId) == '2') {
-                    $priceTotal = $row['subtotal'] + $row['tax_amount'] - $row['shipping_tax_amount'];
+                    $priceTotal = $row['base_subtotal'] + $row['base_tax_amount'] - $row['base_shipping_tax_amount'];
                 }
                 else {
-                    $priceTotal = $row['grand_total'];    
+                    $priceTotal = $row['base_grand_total'];    
                 }    
                 $priceTotal = $this->convertPrice($priceTotal);               
-       	 		$custAdress = $custCountry.'/'.substr($custPostCode,0,1).'/'.substr($custPostCode,0,2).'/'.$custCity.'/'.$custPostCode;
-       	 		$emos->addEmosBillingPageArray($ordId,$custId,$priceTotal,$custCountry,$custPostCode,$custCity);
+                $custAdress = $custCountry.'/'.substr($custPostCode,0,1).'/'.substr($custPostCode,0,2).'/'.$custCity.'/'.$custPostCode;
+                $emos->addEmosBillingPageArray($ordId,$custId,$priceTotal,$custCountry,$custPostCode,$custCity);
 
        	   /*
        	    * addEmosBasketPageArray checkout
