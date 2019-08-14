@@ -94,6 +94,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		 *  emos addContent
 		 */
 	    $storeId = Mage::app()->getStore()->getStoreId();
+	    $storeCode = Mage::app()->getStore()->getCode();
 	    $storeNameLoad = Mage::getModel('core/store_group')->load($storeId);
         $storeName = $storeNameLoad->getName();
         $tablePrefix = Mage::getConfig()->getTablePrefix();
@@ -198,12 +199,51 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
         	}
         }
 
-       //not specified sites
+         /* not specified sites
+         *  check if get current url match
+         */
+        if(trim($contentPath) == '') {
+        		$checkPath = str_replace($_SERVER['SERVER_NAME'],"",$realUrl);
+        		$checkPath = str_replace("https://","",$checkPath);
+        		$checkPath = str_replace("http://","",$checkPath);
+        		if(strpos($checkPath,"?") != false) {
+        			$reqPos = strPos($checkPath,"?");
+        			$checkPath = substr($checkPath,0,$reqPos);
+        		}
+        		if(substr($checkPath,-1) == "/") {
+        			$checkPath = substr($checkPath,0,-1);
+        		}
+        		$checkPath = str_replace("/index.php/".$storeCode,"",$checkPath);
+        		$checkPath = str_replace("/index.php","",$checkPath);
+        		$codeLen = strlen($storeCode);
+        		if(substr($checkPath,0,$codeLen+1) == '/'.$storeCode) {
+        			$checkPath = substr($checkPath,$codeLen+1);
+        		}
+
+        		if(trim($checkPath) != '') {
+        			$urlExtExp = explode("/",$checkPath);
+					$urlExtO = '';
+					for ($i = 0; $i < sizeof($urlExtExp); $i++) {
+						if(trim($urlExtExp[$i]) != ''){
+							$urlExtO .= ucfirst($urlExtExp[$i]).'/';
+						}
+					}       			
+        			$contentPath = 'Start/'.$eLang[38].'/'.substr($urlExtO,0,-1);
+        			$contentPath = str_replace("//","/",$contentPath);
+        		}
+        }
+
+        //then if php self match
         if(trim($contentPath == '')){
 			$urlExt = $_SERVER['PHP_SELF'];
-    		$urlExt = str_replace('index.php','',$urlExt);
-    		$urlExt = str_replace('.html','',$urlExt);
-    		$urlExt = str_replace('//','/',$urlExt);
+			$urlExt = str_replace("/index.php/".$storeCode."/","",$urlExt);
+    		$urlExt = str_replace("index.php","",$urlExt);
+            $codeLen = strlen($storeCode);
+        	if(substr($urlExt,0,$codeLen+1) == '/'.$storeCode) {
+        		$urlExt = substr($urlExt,$codeLen+1);
+        	}   		
+    		$urlExt = str_replace(".html","",$urlExt);
+    		$urlExt = str_replace("//","/",$urlExt);
     	
 			if(substr($urlExt,0,1) == '/') {
 				$urlExt = substr($urlExt,1);
@@ -211,7 +251,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 			
 			if(substr($urlExt,-1) == '/') {
 				$urlExt = substr($urlExt,0,-1);
-			}		
+			}
 			$urlExtExp = explode("/",$urlExt);
 			$urlExtO = '';
 			for ($i = 0; $i < sizeof($urlExtExp); $i++) {
@@ -219,14 +259,11 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 			}
 			$urlExtO = substr($urlExtO,0,-1);        	
         	$contentPath = 'Start/'.$eLang[38].'/'.$urlExtO;
-            if(trim($contentPath == '' || $contentPath == 'Start/'.$eLang[38].'/')){
-            	$urlExt1 = $_SERVER['REQUEST_URI'];
-        		$contentPath = 'Start/'.$eLang[38].$urlExt1;
-        		if($contentPath == 'Start/' || $contentPath == 'Start/'.$eLang[38].'/' || $contentPath == 'Start/'.$eLang[38].'/index.php/') {
-        			$contentPath = 'Start';
-        		}
+            if(trim($contentPath == '' || $contentPath == 'Start/'.$eLang[38].'/' || $contentPath == 'Start/'.$eLang[38].'/index.php/')){
+            	$contentPath = 'Start';
         	}        	
         }
+        
 
         // if not onePage checkout steps
         if(stristr($realUrl,'checkout/onepage/') == false) {
@@ -237,21 +274,12 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
         if(stristr($realUrl,'checkout/onepage/success') != false) {
         	$emos->addContent($contentPath);
         }
-
+        
         /*
          * emos addPageID
          */
         $emos->addPageID(md5($contentPath)); //same as $contentPath	
-         
-	    /*
-	     * emos addSiteID
-	     */
-        /* will not work on multilanguage shops
-        $getStoreID = Mage::app()->getStore()->getStoreId();
-	    $selectStoreDB = Mage::getModel('core/store_group')->load($getStoreID);
-        $siteName = $selectStoreDB->getId ();
-        */
-        
+
 		$siteName = $_SERVER['SERVER_NAME'];        
         $emos->addSiteID($siteName);
         
