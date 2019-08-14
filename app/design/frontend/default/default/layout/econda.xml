@@ -3,14 +3,28 @@
     <default>
         <reference name="before_body_end">
             <block type="econda/econda" after="-" name="econda">
-            	<action method="setTemplate"><template>econda/tracker.phtml</template></action>
+                <action method="setTemplate"><template>econda/tracker.phtml</template></action>
             </block>
         </reference>
    </default>
+   <checkout_multishipping_success>
+        <reference name="content">
+            <block type="econda/econda" before="-" name="econda">
+                <action method="setTemplate"><template>econda/trackerms.phtml</template></action>
+            </block>
+        </reference>
+   </checkout_multishipping_success>
+   <checkout_onepage_success>
+        <reference name="content">
+            <block type="econda/econda" before="-" name="econda">
+                <action method="setTemplate"><template>econda/trackerms.phtml</template></action>
+            </block>
+        </reference>
+   </checkout_onepage_success>       
    <checkout_onepage_index>        
         <reference name="content">
-            <block type="econda/econda" after="-" name="trackerop" template="econda/trackerop.phtml">
+            <block type="econda/econda" before="-" name="trackerop" template="econda/trackerop.phtml">
             </block>
         </reference>
    </checkout_onepage_index>
-</layout> 
+</layout>

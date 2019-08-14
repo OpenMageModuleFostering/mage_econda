@@ -1,8 +1,8 @@
 <?php
     $realUrlNoOp = Mage::helper('core/url')->getCurrentUrl();
-    if(stristr($realUrlNoOp,'checkout/onepage/index/') == false) {
+    if(stristr($realUrlNoOp,'checkout/onepage/index/') == false && stristr($realUrlNoOp,'checkout/multishipping/success/') == false && stristr($realUrlNoOp,'checkout/onepage/success/') == false && stristr($realUrlNoOp,'uospayment/success/') == false) {
 		echo $this->getEmos();
-    }	 
+    }
 ?>
 
  

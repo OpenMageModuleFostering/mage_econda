@@ -2,7 +2,6 @@
 
 $realUrlOp = Mage::helper('core/url')->getCurrentUrl();
 $opsession = Mage::getSingleton('checkout/session');
-
 if(stristr($realUrlOp,'checkout/onepage/') != false) {
 
     $storeIdOp = $this->getStore();
@@ -52,7 +51,7 @@ if(stristr($realUrlOp,'checkout/onepage/') != false) {
     }    
 
     if($emVersion == '2') {
-        $emosOut = "\n<!-- Start Econda-Monitor M111 -->\n";
+        $emosOut = "\n<!-- Start Econda-Monitor M115 -->\n";
         $emosOut .= "\n<script type=\"text/javascript\">\n//<![CDATA[\n";
         $emosOut .= "    window.emosTrackVersion = 2;\n";
         $emosOut .= "//]]>\n</script>";
@@ -67,7 +66,7 @@ if(stristr($realUrlOp,'checkout/onepage/') != false) {
         $emosOut .= $emosLogin;
     }
     else {
-        $emosOut = "\n<!-- Start Econda-Monitor M111 -->\n";
+        $emosOut = "\n<!-- Start Econda-Monitor M115 -->\n";
         $emosOut .= "\n<a name=\"emos_name\" title=\"content\" rel=\"Start/".$eLang[38]."\" rev=\"\"></a>\n";
         $emosOut .= "<script type=\"text/javascript\">\n//<![CDATA[\n";
         $emosOut .= " window.emosPageId = '".$setPageId."'; \n";

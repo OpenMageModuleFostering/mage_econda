@@ -101,7 +101,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		/*
 		 * start of emos string
 		 */
-	    $emosString = "\n\n<!-- Start Econda-Monitor M114 -->\n\n";
+	    $emosString = "\n\n<!-- Start Econda-Monitor M115 -->\n\n";
 
 		$emos = new EMOS($pathToFile);
         
@@ -304,7 +304,14 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
         /*
          * emos addSiteID
          */
-		$siteName = $_SERVER['SERVER_NAME'];        
+        $siteidValue = 'econda/econda/tracking_siteid';
+        $siteidOv = Mage::getStoreConfig($siteidValue, $storeId);
+        if(!empty($siteidOv) && trim($siteidOv) != "") {
+            $siteName = trim($siteidOv);   
+        }
+        else {
+            $siteName = $_SERVER['SERVER_NAME'];            
+        }                 
         $emos->addSiteID($siteName);
         
         /*
@@ -588,7 +595,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
        		case 'REVIEW':
  				$emos->addOrderProcess("6_".$eLang[42]);
 				$actOrder = Mage::getSingleton('checkout/session')->getQuoteId();
-				$session->setData('econda_order_id',$actOrder);  
+				$session->setData('econda_order_id',$actOrder);
 				break;
        		case 'SUCCESS':
        			$emos->addOrderProcess("7_".$eLang[41]);   			
@@ -597,37 +604,54 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 			 * addEmosBillingPageArray checkout
 			 */	
        		 	if(stristr($realUrl,'checkout/onepage/success/') != false || stristr($realUrl,'uospayment/success/') != false) {//onepage
-       	 			$lastOrder = Mage::getSingleton('checkout/type_onepage')->getLastOrderId();
-       	 			$tableSfq = $tablePrefix.'sales_flat_quote';
-					$result = $db->query("SELECT entity_id FROM $tableSfq WHERE reserved_order_id = $lastOrder");
- 					$row = $result->fetch(PDO::FETCH_ASSOC);        	
-        			$entityId = $row['entity_id'];
-        			$lastOrderId = $lastOrder;        	 			
+                    $lastOrder = Mage::getSingleton('checkout/type_onepage')->getLastOrderId();
+                    $lastOrderId = $lastOrder;
+                    $quote = Mage::getSingleton('checkout/type_onepage')->getQuote();
+                    $entityId = $quote->getData('entity_id');                    
+                    
+                    if(empty($entityId)) {
+                        $tableSfq = $tablePrefix.'sales_flat_quote';
+                        $result = $db->query("SELECT entity_id FROM $tableSfq WHERE reserved_order_id = $lastOrder");
+                        $row = $result->fetch(PDO::FETCH_ASSOC);            
+                        $entityId = $row['entity_id'];
+                    }    
       	 	 	}
        		 	else{//multipage
-       		 		$entityId = intval($session->getData('econda_order_id'));
-       		 		$tableSfq = $tablePrefix.'sales_flat_quote';
-					$result = $db->query("SELECT reserved_order_id FROM $tableSfq WHERE entity_id = $entityId");
- 					$row = $result->fetch(PDO::FETCH_ASSOC);          		 		
-					$lastOrderId = $row['reserved_order_id'];
+                    $entityId = intval($session->getData('econda_order_id'));
+                    $orderIds = Mage::getSingleton('core/session')->getOrderIds(false);
+                    if($orderIds && is_array($orderIds)) {
+                        $lastOrderId =  implode(' / ', $orderIds);
+                    } 
+                    else {
+                        $customerId = Mage::getSingleton('customer/session')->getCustomerId();
+                        $tableSfqos = $tablePrefix.'sales_order'; 
+                        $result = $db->query("SELECT increment_id FROM $tableSfqos WHERE customer_id = $customerId");
+                        while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                            $lastOrderId = $row['increment_id'];    
+                        } 
+                    }                      
        		 	}
                 $tableSfqa = $tablePrefix.'sales_flat_quote_address'; 
                 $result = $db->query("SELECT customer_id,city,postcode,country_id,base_grand_total,base_subtotal,base_tax_amount,base_shipping_tax_amount FROM $tableSfqa WHERE quote_id = $entityId and address_type = 'shipping'");
-                $row = $result->fetch(PDO::FETCH_ASSOC);
-                $custCountry = $row['country_id'];                  
-                $custPostCode = $row['postcode'];
-                $custCity = $row['city'];
-                $custId = $row['customer_id'];
-                $ordId = $lastOrderId;
-                if(Mage::getStoreConfig($billingOption, $storeId) == '1') {
-                    $priceTotal = $row['base_subtotal'];
+                $priceTotal = 0;
+                
+                while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                    $custCountry = $row['country_id'];                  
+                    $custPostCode = $row['postcode'];
+                    $custCity = $row['city'];
+                    $custId = $row['customer_id'];
+                    $ordId = $lastOrderId;
+                    if(Mage::getStoreConfig($billingOption, $storeId) == '1') {
+                        $priceTotal += $row['base_subtotal'];
+                    }
+                    else if(Mage::getStoreConfig($billingOption, $storeId) == '2') {
+                        $priceTotal += $row['base_subtotal'] + $row['base_tax_amount'] - $row['base_shipping_tax_amount'];
+                    }
+                    else {
+                        $priceTotal += $row['base_grand_total'];    
+                    }    
                 }
-                else if(Mage::getStoreConfig($billingOption, $storeId) == '2') {
-                    $priceTotal = $row['base_subtotal'] + $row['base_tax_amount'] - $row['base_shipping_tax_amount'];
-                }
-                else {
-                    $priceTotal = $row['base_grand_total'];    
-                }    
+                
                 $priceTotal = $this->convertPrice($priceTotal);               
                 $custAdress = $custCountry.'/'.substr($custPostCode,0,1).'/'.substr($custPostCode,0,2).'/'.$custCity.'/'.$custPostCode;
                 $emos->addEmosBillingPageArray($ordId,$custId,$priceTotal,$custCountry,$custPostCode,$custCity);
