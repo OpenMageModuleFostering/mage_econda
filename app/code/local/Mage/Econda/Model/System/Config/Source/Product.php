@@ -22,7 +22,7 @@ class Mage_Econda_Model_System_Config_Source_Product
     
    /**
     * returns the value for billing select in backend
-    */        
+    */
     public function toOptionArray()
     {
         return array(

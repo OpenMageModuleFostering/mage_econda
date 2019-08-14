@@ -1,5 +1,6 @@
 "Used Language","Verwendete Sprache"
 "Settings","Einstellungen"
+"Activation","Aktivierung"
 "Select only the language, which at the time of initial activation of your econda product has been selected.","Nur die Sprache verwenden, welche bei der ersten Aktivierung Ihres econda Produktes ausgew&#228hlt wurde."
 "Total Price (Grand Total)","Gesamtpreis (Grand Total)"
 "Value of Goods without Tax (Subtotal)","Warenwert ohne Steuer (Subtotal)"
@@ -8,4 +9,5 @@
 "Billing and Prices","Rechnung und Preise"
 "Set Siteid manually. Only change this in agreement with econda. Leave empty, if not used.","Manuelle Festlegung der Siteid. Nur in Abstimmung mit econda vornehmen. Frei lassen, falls nicht ben&#246tigt."
 "Set Langid manually. Only change this in agreement with econda. Leave empty, if not used.","Manuelle Festlegung der Langid. Nur in Abstimmung mit econda vornehmen. Frei lassen, falls nicht ben&#246tigt."
+"Use the Magento product ID or SKU for product tracking.","Die Magento Produkt ID oder die SKU f&#252r die Produkterfassung verwenden."
 "Test it for free","Jetzt kostenlos testen"

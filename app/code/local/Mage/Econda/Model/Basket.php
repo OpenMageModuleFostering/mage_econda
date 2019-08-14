@@ -61,7 +61,7 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
         $rootCat = Mage::app()->getStore()->getRootCategoryId();
         if(sizeof($getCatId) > 0) {
             $catLevel = 0;
-            $catPath = array();
+			$catPath = array();
             for($i=0;$i<sizeof($getCatId);$i++) {
                 $level = Mage::getModel('catalog/category')->load($getCatId[$i])->getLevel();
                 $catPathPa = Mage::getModel('catalog/category')->load($getCatId[$i])->getPathIds();
@@ -148,8 +148,7 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
         else {
             $prodGroup = $this->eLang[39][$this->lang];
         }
-        
-        
+
         if(Mage::getStoreConfig($billingOption, $storeId) == '1') {
             if(Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false) != 0) {
                 $priceTax = Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), false);
@@ -164,11 +163,16 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
             }
             else {
                 $priceTax = Mage::helper('tax')->getPrice($item, $item->getPrice(), true);    
-            }    
+            }
         }
         $eItem = Mage::getModel('econda/item');
         $eItem->productName = trim($item->getName());
-        $eItem->productID = $item->getId();
+        if(Mage::getStoreConfig('econda/econda_settings/product_id', $storeId) == '1' && trim($item->getSKU()) != "") {
+            $eItem->productID = $item->getSKU();
+        }
+        else {
+            $eItem->productID = $item->getId();
+        }
         $eItem->price = $this->convertPrice($priceTax);
         $eItem->quantity = '1';
         $eItem->productGroup = $prodGroup.'/'.trim($item->getName());
@@ -184,13 +188,19 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
     {
         $isAddBasket = false;
         $billingOption = 'econda/econda_settings/billing_total';
+        $isSku = Mage::getStoreConfig('econda/econda_settings/product_id', $storeId);
         $basketActions = Array();
         $nIdArray = array();
         $nQtyArray = array();
         $nNmeArray = array();
         $counter = 1;
         foreach($this->session->getQuote()->getAllItems() as $item) {
-            $nIdArray[$counter] = $item->getproductId();
+            if($isSku == '1' && trim($item->getSku()) != "") {
+                $nIdArray[$counter] = $item->getSku();
+            }
+            else{
+                $nIdArray[$counter] = $item->getproductId();
+            }
             $nQtyArray[$counter] = $item->getQty();
             $nNmeArray[$counter] = $item->getItemId();
             $counter += 1;
@@ -218,7 +228,14 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
                 else $prodGroup = $this->eLang[39][$this->lang];
                 $eItem = Mage::getModel('econda/item');
                 $eItem->productName = trim($item->getName());
-                $eItem->productID = $item->getproductId();
+                
+                if($isSku == '1' && trim($item->getSku()) != "") {
+                    $eItem->productID = $item->getSku();
+                }
+                else{
+                    $eItem->productID = $item->getproductId();
+                }
+ 
                 // calculate tax
                 if(Mage::getStoreConfig($billingOption, $storeId) == '1') {
                     if(Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), true, null, null, $item->getTaxClassId(), $storeId, true) != 0) {
@@ -272,7 +289,12 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
                     else $prodGroup = $this->eLang[39][$this->lang];
                     $eItem = Mage::getModel('econda/item');
                     $eItem->productName = trim($item->getName());
-                    $eItem->productID = $item->getproductId();
+                    if($isSku == '1' && trim($item->getSku()) != "") {
+                        $eItem->productID = $item->getSku();
+                    }
+                    else{
+                        $eItem->productID = $item->getproductId();
+                    }
                     if(Mage::getStoreConfig($billingOption, $storeId) == '1') {
                         if(Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), true, null, null, $item->getTaxClassId(), $storeId, true) != 0) {
                             $priceTax = Mage::helper('tax')->getPrice($item, $item->getFinalPrice(), true, null, null, $item->getTaxClassId(), $storeId, true); // with tax
@@ -329,7 +351,7 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
             $prefix = Mage::getConfig()->getTablePrefix();
             $db = Mage::getSingleton('core/resource')->getConnection('core_write');
             $table = $prefix.'sales_flat_quote_item';
-            $result = $db->query("SELECT product_id,name,qty,price,parent_item_id FROM $table WHERE quote_id = $entityId");
+            $result = $db->query("SELECT product_id,name,qty,price,parent_item_id,sku FROM $table WHERE quote_id = $entityId");
             while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                 if($row['parent_item_id'] == '') {
                     $getGroup = Mage::getModel('econda/basket')->getProductCategory($row['product_id']);
@@ -342,7 +364,12 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
                     $item = Mage::getModel('catalog/product')->load($row['product_id']);
                     $eItem = Mage::getModel('econda/item');
                     $eItem->productName = trim($row['name']);
-                    $eItem->productID = $row['product_id'];
+                    if(Mage::getStoreConfig('econda/econda_settings/product_id', $storeId) == '1' && trim($row['sku']) != "") {
+                        $eItem->productID = trim($row['sku']);
+                    }
+                    else{
+                        $eItem->productID = $row['product_id'];
+                    }
                     $eItem->quantity = number_format($row['qty'],0);
                     $discount = $row['product_id'];
                     $table = $prefix.'catalog_product_entity_tier_price';
@@ -384,7 +411,7 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
             }
             return $basket;
         } catch (Exception $error) {
-            Mage::log("Econda on success no basket available"); // Write something into log for later support
+            Mage::log("Econda on success no basket available: ".$error); // Write something into log for later support
         }
         return null;
     }
@@ -409,7 +436,7 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
                 // fallback if there is no result
                 if(empty($entityId)) {
                     $table = $prefix.'sales_flat_quote';
-                    $result = $db->fetchRow("SELECT entity_id FROM $table WHERE reserved_order_id = $lastOrder");
+                    $result = $db->fetchRow("SELECT entity_id FROM $table WHERE reserved_order_id = '".$lastOrder."'");
                     $entityId = $result['entity_id'];
                 }
             }
@@ -453,7 +480,7 @@ class Mage_Econda_Model_Basket extends Mage_Core_Model_Abstract
             $custAdress = $custCountry.'/'.substr($custPostCode,0,1).'/'.substr($custPostCode,0,2).'/'.$custCity.'/'.$custPostCode;
             return Array($ordId,$custId,$priceTotal,$custCountry,$custPostCode,$custCity,$entityId);
         } catch (Exception $error) {
-            Mage::log("Econda on success no billing available"); // Write something into log for later support
+            Mage::log("Econda on success no billing available: ".$error); // Write something into log for later support
         }
         return null;
     }

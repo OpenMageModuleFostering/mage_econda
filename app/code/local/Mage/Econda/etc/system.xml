@@ -245,7 +245,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                        </tracking_langid>                        
+                        </tracking_langid> 
                         <billing_total>
                             <label>Billing and Prices</label>
                             <comment>Get Billing and Prices with or without Tax and Shipping</comment>
@@ -256,6 +256,16 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </billing_total>
+                        <product_id>
+                            <label>Product ID</label>
+                            <comment>Use the Magento product ID or SKU for product tracking.</comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>econda/system_config_source_product</source_model>
+                            <sort_order>6</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </product_id>
                     </fields>
                 </econda_settings>
             </groups>

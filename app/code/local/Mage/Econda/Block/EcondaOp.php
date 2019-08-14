@@ -66,7 +66,7 @@ class Mage_Econda_Block_EcondaOp extends Mage_Core_Block_Template
                 $emosLogin .= "    emospro.login = [['".$customerId."','0']];\n";
                 $opsession->setData('econda_logged','2');
             }
-            $emosOut = "\n\n<!-- Start Econda-Monitor M1591 -->\n";
+            $emosOut = "\n\n<!-- Start Econda-Monitor M160 -->\n";
             $emosOut .= "<script type=\"text/javascript\">\n//<![CDATA[\n";
             $emosOut .= "    window.emosTrackVersion = 2;\n";
             $emosOut .= "//]]>\n</script>";
