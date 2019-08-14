@@ -3,7 +3,7 @@
     "type": "magento-module",
     "license": "BSD",
     "homepage": "",
-    "description": "Bindet econda Web Controlling in Magento ein. Inserts econda Web Contolling into Magento.",
+    "description": "Bindet econda Web Shop Controlling in Magento ein. Inserts econda Web Shop Contolling into Magento.",
     "authors": [
     {
         "name": "ecdev",

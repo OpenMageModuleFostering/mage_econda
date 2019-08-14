@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+<?php
 /**
  * Magento
  *
@@ -18,15 +17,16 @@
  * @copyright   Copyright (c) 2012 econda GmbH (http://www.econda.de)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
---> 
-<layout version="0.1.0">
-	<default>
-		<reference name="content">
-			<block type="econda/econda" before="-" name="econda">
-				<action method="setTemplate">
-					<template>econda/tracker.phtml</template>
-				</action>
-			</block>
-		</reference>
-	</default>
-</layout>
+class Mage_Econda_Model_System_Config_Source_Langid
+{
+    
+   /**
+    * returns the value for siteid field in backend
+    */     
+    public function toOptionArray()
+    {
+        return array(
+            array('value'=>'', 'label'=>Mage::helper('econda')->__(''))
+        );
+    }
+}

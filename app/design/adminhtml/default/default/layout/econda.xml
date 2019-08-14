@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<layout version="0.1.0">
-    <econda_adminhtml_econda_index>
-        <reference name="content">
-            <block type="econda/adminhtml_econda" name="econda" />
-        </reference>
-    </econda_adminhtml_econda_index>
-</layout>
