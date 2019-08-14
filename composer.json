@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/Mage_Econda",
+    "type": "magento-module",
+    "license": "BSD",
+    "homepage": "",
+    "description": "Bindet econda Web Controlling in Magento ein. Inserts econda Web Contolling into Magento.",
+    "authors": [
+    {
+        "name": "ecdev",
+        "email": "bebop30@gmx.net"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

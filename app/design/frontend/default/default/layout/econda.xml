@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <default>
+        <reference name="before_body_end">
+            <block type="econda/econda" after="-" name="econda">
+            	<action method="setTemplate"><template>econda/tracker.phtml</template></action>
+            </block>
+        </reference>
+   </default>
+   <checkout_onepage_index>        
+        <reference name="content">
+            <block type="econda/econda" after="-" name="trackerop" template="econda/trackerop.phtml">
+            </block>
+        </reference>
+   </checkout_onepage_index>
+</layout> 
