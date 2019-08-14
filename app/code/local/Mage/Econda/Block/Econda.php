@@ -57,7 +57,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
     
     public function getEmos() {
     	
-    	require ('emos.php');
+        require Mage::getModuleDir('', 'Mage_Econda').DS.'Block'.DS.'emos.php';
     	$storeId = $this->getStore();
     	$langValue = 'econda/econda/tracking_language';
     	$langPath = Mage::getStoreConfig($langValue, $storeId);
@@ -71,7 +71,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
     	else {
     		$langFile = 'german';
     	}
-    	require_once ('app/code/local/Mage/Econda/Language/'.$langFile.'.php');
+        require Mage::getModuleDir('', 'Mage_Econda').DS.'Language'.DS.$langFile.'.php';
     	
     	/*
     	 * path to emos2.js
@@ -82,7 +82,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 		/*
 		 * start of emos string
 		 */
-	    $emosString = "\n\n<!-- Start Econda-Monitor -->\n\n";
+	    $emosString = "\n\n<!-- Start Econda-Monitor M102 -->\n\n";
 
 		$emos = new EMOS($pathToFile);
 		
@@ -134,7 +134,7 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
 			$stepCheckout = 'PAYMENT';
 		}
         if(stristr($realUrl,'checkout/multishipping/overview/') != false) {
-			$contentCheckout = $eLang[6];
+			$contentCheckout = $eLang[36];
 			$stepCheckout = 'REVIEW';
 		}	
         if(stristr($realUrl,'checkout/multishipping/success/') != false || stristr($realUrl,'checkout/onepage/success/') != false || stristr($realUrl,'uospayment/success/') != false) {
@@ -658,13 +658,4 @@ class Mage_Econda_Block_Econda extends Mage_Core_Block_Template
     	$corPrice = str_replace('.','',$corPrice);
         return $corPrice.'.'.substr($price,-2);
     }
-    
-private function pageUrl() {
-	
-$protocol = ((int) $_SERVER['SERVER_PORT'] === 443)? 'https://' : 'http://';
-$current_page = $protocol . $_SERVER['HTTP_HOST'] . ((!empty($_SERVER['REQUEST_URI']))? $_SERVER['REQUEST_URI'] : '');
-
-return $current_page;
-} 
- 
 }
